@@ -18,7 +18,11 @@ function getServerPostHogClient(): PostHog | null {
 
 export async function captureServerError(
   error: unknown,
-  properties: Record<string, string | null | undefined> = {},
+  args: {
+    distinctId?: string;
+    organizationId?: string;
+    properties?: Record<string, unknown>;
+  } = {},
 ) {
   if (!(await isHostedServerAuthMode())) {
     return;
@@ -28,9 +32,12 @@ export async function captureServerError(
   if (!client) return;
 
   try {
-    await client.captureExceptionImmediate(error, undefined, {
+    await client.captureExceptionImmediate(error, args.distinctId, {
       source: "server",
-      ...properties,
+      ...(args.organizationId
+        ? { $groups: { organization: args.organizationId } }
+        : {}),
+      ...args.properties,
     });
   } catch (posthogError) {
     console.error("posthog server capture failed", posthogError);

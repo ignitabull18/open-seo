@@ -1,7 +1,10 @@
 import { createMiddleware } from "@tanstack/react-start";
 import { z } from "zod";
 import { AppError } from "@/server/lib/errors";
-import { errorHandlingMiddleware } from "@/middleware/errorHandling";
+import {
+  authenticatedErrorTrackingMiddleware,
+  errorHandlingMiddleware,
+} from "@/middleware/errorHandling";
 import type { EnsuredUserContext } from "@/middleware/ensure-user/types";
 import { ensureUserMiddleware } from "@/middleware/ensureUser";
 
@@ -26,6 +29,7 @@ function getAuthenticatedContext(context: unknown): EnsuredUserContext {
 export const globalServerFunctionMiddleware = [
   errorHandlingMiddleware,
   ensureUserMiddleware,
+  authenticatedErrorTrackingMiddleware,
 ] as const;
 
 export const requireAuthenticatedContext = [

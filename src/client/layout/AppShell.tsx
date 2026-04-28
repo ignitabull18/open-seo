@@ -6,6 +6,7 @@ import {
   CircleHelp,
   CreditCard,
   Menu,
+  Settings,
   User,
 } from "lucide-react";
 import {
@@ -322,7 +323,9 @@ function AccountMenu({ mobileOnly = false }: { mobileOnly?: boolean }) {
         >
           {email ? (
             <li className="menu-title max-w-full">
-              <span className="truncate text-base-content">{email}</span>
+              <span className="truncate text-base-content" data-ph-mask>
+                {email}
+              </span>
             </li>
           ) : null}
           {mobileOnly ? (
@@ -330,6 +333,14 @@ function AccountMenu({ mobileOnly = false }: { mobileOnly?: boolean }) {
               <Link to={SUPPORT_PATH} className="flex items-center gap-2">
                 <CircleHelp className="h-4 w-4" />
                 Help & Community
+              </Link>
+            </li>
+          ) : null}
+          {isHostedMode ? (
+            <li>
+              <Link to="/settings" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Settings
               </Link>
             </li>
           ) : null}

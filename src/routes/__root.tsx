@@ -93,9 +93,8 @@ function PostHogBootstrap() {
       return;
     }
 
-    initPostHog();
-
     if (userId) {
+      initPostHog();
       identifyAnalyticsUser({ userId, organizationId });
       previousUserIdRef.current = userId;
     } else if (previousUserIdRef.current) {
