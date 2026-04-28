@@ -3,11 +3,6 @@ import { isHostedClientAuthMode } from "@/lib/auth-mode";
 // Type-only import: extracts the type at compile time without bundling posthog-js
 // oxlint-disable-next-line typescript/consistent-type-imports -- import() type avoids eagerly bundling posthog-js
 type BrowserPostHogClient = typeof import("posthog-js").default;
-type BrowserPostHogInitConfig = NonNullable<
-  Parameters<BrowserPostHogClient["init"]>[1]
-> & {
-  __add_tracing_headers?: string[];
-};
 
 let browserPostHogClientPromise: Promise<BrowserPostHogClient | null> | null =
   null;
@@ -34,13 +29,12 @@ function getBrowserPostHogClient(): Promise<BrowserPostHogClient | null> {
       }
 
       if (!browserPostHogInitialized) {
-        const config: BrowserPostHogInitConfig = {
+        client.init(apiKey, {
           api_host: host,
           defaults: "2026-01-30",
           capture_exceptions: true,
           capture_pageview: "history_change",
           respect_dnt: true,
-          __add_tracing_headers: [window.location.hostname],
           session_recording: {
             maskAllInputs: true,
             maskTextSelector: "[data-ph-mask], .ph-mask",
@@ -60,9 +54,7 @@ function getBrowserPostHogClient(): Promise<BrowserPostHogClient | null> {
             }
             return properties;
           },
-        };
-
-        client.init(apiKey, config);
+        });
         browserPostHogInitialized = true;
       }
 
@@ -111,7 +103,10 @@ export function identifyAnalyticsUser(args: {
 }
 
 export function resetAnalyticsUser() {
-  withPostHogClient((client) => client.reset());
+  withPostHogClient((client) => {
+    client.stopSessionRecording();
+    client.reset();
+  });
 }
 
 export async function getAnalyticsOptOutStatus() {
@@ -124,9 +119,11 @@ export async function setAnalyticsOptOutStatus(optedOut: boolean) {
   if (!client) return null;
 
   if (optedOut) {
+    client.stopSessionRecording();
     client.opt_out_capturing();
   } else {
     client.opt_in_capturing();
+    client.startSessionRecording();
   }
 
   return client.has_opted_out_capturing();
