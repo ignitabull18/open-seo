@@ -69,11 +69,6 @@ function getBrowserPostHogClient(): Promise<BrowserPostHogClient | null> {
   return browserPostHogClientPromise;
 }
 
-export function initPostHog() {
-  if (!analyticsCaptureEnabled) return;
-  void getBrowserPostHogClient();
-}
-
 function withPostHogClient(fn: (client: BrowserPostHogClient) => void) {
   void getBrowserPostHogClient().then((client) => {
     if (!client) return;
