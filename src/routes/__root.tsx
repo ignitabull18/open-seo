@@ -14,8 +14,8 @@ import { DefaultCatchBoundary } from "@/client/components/DefaultCatchBoundary";
 import { themePreferenceInitScript } from "@/client/lib/theme";
 import {
   identifyAnalyticsUser,
-  initPostHog,
   resetAnalyticsUser,
+  startAnalyticsCapture,
   stopAnalyticsCapture,
 } from "@/client/lib/posthog";
 import { NotFound } from "@/client/components/NotFound";
@@ -96,7 +96,7 @@ function PostHogBootstrap() {
     }
 
     if (userId && !optedOut) {
-      initPostHog();
+      startAnalyticsCapture();
       identifyAnalyticsUser({ userId, organizationId });
       previousUserIdRef.current = userId;
     } else if (userId && optedOut) {
