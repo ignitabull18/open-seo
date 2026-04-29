@@ -1,12 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Monitor, Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import {
-  getAnalyticsOptOutStatus,
-  setAnalyticsOptOutStatus,
-} from "@/client/lib/posthog";
 import { type ThemePreference, useThemePreference } from "@/client/lib/theme";
+import { authClient, useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -26,50 +23,20 @@ const THEME_OPTIONS: {
 function SettingsPage() {
   const isHosted = isHostedClientAuthMode();
   const { themePreference, setThemePreference } = useThemePreference();
-
-  const [isOptedOut, setIsOptedOut] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, isPending: isSessionPending } = useSession();
   const [isSaving, setIsSaving] = useState(false);
-  const [isUnavailable, setIsUnavailable] = useState(false);
 
-  useEffect(() => {
-    if (!isHosted) {
-      setIsLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-
-    async function loadPreference() {
-      const status = await getAnalyticsOptOutStatus();
-      if (cancelled) return;
-
-      if (status === null) {
-        setIsUnavailable(true);
-      } else {
-        setIsOptedOut(status);
-      }
-      setIsLoading(false);
-    }
-
-    void loadPreference();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [isHosted]);
-
-  const analyticsEnabled = isOptedOut === false;
+  const analyticsEnabled = session?.user?.analyticsOptedOut !== true;
 
   async function updateAnalyticsPreference(enabled: boolean) {
     setIsSaving(true);
     try {
-      const status = await setAnalyticsOptOutStatus(!enabled);
-      if (status === null) {
-        setIsUnavailable(true);
-        toast.error("Analytics settings are unavailable right now.");
+      const result = await authClient.updateUser({
+        analyticsOptedOut: !enabled,
+      });
+      if (result.error) {
+        toast.error("We couldn't update your analytics setting.");
       } else {
-        setIsOptedOut(status);
         toast.success(enabled ? "Analytics enabled" : "Analytics disabled");
       }
     } catch {
@@ -130,16 +97,14 @@ function SettingsPage() {
               <div>
                 <p className="text-sm">Help improve OpenSEO</p>
                 <p className="mt-1 text-sm text-base-content/60">
-                  {isUnavailable
-                    ? "Not configured for this deployment."
-                    : "Share analytics and usage data."}
+                  Share analytics and usage data.
                 </p>
               </div>
               <input
                 type="checkbox"
                 className="toggle toggle-primary"
                 checked={analyticsEnabled}
-                disabled={isLoading || isSaving || isUnavailable}
+                disabled={isSessionPending || isSaving || !session?.user}
                 onChange={(event) => {
                   void updateAnalyticsPreference(event.currentTarget.checked);
                 }}

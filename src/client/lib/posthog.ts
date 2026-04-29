@@ -109,24 +109,17 @@ export function resetAnalyticsUser() {
   });
 }
 
-export async function getAnalyticsOptOutStatus() {
-  const client = await getBrowserPostHogClient();
-  return client ? client.has_opted_out_capturing() : null;
-}
-
-export async function setAnalyticsOptOutStatus(optedOut: boolean) {
-  const client = await getBrowserPostHogClient();
-  if (!client) return null;
-
-  if (optedOut) {
-    client.stopSessionRecording();
-    client.opt_out_capturing();
-  } else {
-    client.opt_in_capturing();
-    client.startSessionRecording();
-  }
-
-  return client.has_opted_out_capturing();
+export function stopAnalyticsCapture() {
+  if (!browserPostHogInitialized || !browserPostHogClientPromise) return;
+  void browserPostHogClientPromise.then((client) => {
+    if (!client) return;
+    try {
+      client.stopSessionRecording();
+      client.opt_out_capturing();
+    } catch (e) {
+      console.error("posthog opt-out failed", e);
+    }
+  });
 }
 
 export function captureClientError(
