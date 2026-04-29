@@ -14,7 +14,6 @@ import {
   MissingSeoSetupModal,
   SeoApiStatusBanners,
 } from "@/client/layout/AppShellParts";
-import { ThemePreferenceMenuItems } from "@/client/components/ThemePreferenceMenuItems";
 import { getProjectNavGroups } from "@/client/navigation/items";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
@@ -338,20 +337,18 @@ function AccountMenu({ mobileOnly = false }: { mobileOnly?: boolean }) {
           ) : null}
           {isHostedMode ? (
             <li>
-              <Link to="/settings" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
-              </Link>
-            </li>
-          ) : null}
-          {isHostedMode ? (
-            <li>
               <a href={BILLING_ROUTE} className="flex items-center gap-2">
                 <CreditCard className="h-4 w-4" />
                 Billing
               </a>
             </li>
           ) : null}
+          <li>
+            <Link to="/settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
+          </li>
           {isHostedMode && email ? (
             <li>
               <button
@@ -363,7 +360,6 @@ function AccountMenu({ mobileOnly = false }: { mobileOnly?: boolean }) {
               </button>
             </li>
           ) : null}
-          <ThemePreferenceMenuItems />
         </ul>
       </div>
     </div>

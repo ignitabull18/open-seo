@@ -1,29 +1,43 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { ShieldCheck } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   getAnalyticsOptOutStatus,
   setAnalyticsOptOutStatus,
 } from "@/client/lib/posthog";
+import { type ThemePreference, useThemePreference } from "@/client/lib/theme";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 
 export const Route = createFileRoute("/_app/settings")({
-  beforeLoad: () => {
-    if (!isHostedClientAuthMode()) {
-      throw notFound();
-    }
-  },
   component: SettingsPage,
 });
 
+const THEME_OPTIONS: {
+  value: ThemePreference;
+  label: string;
+  icon: typeof Sun;
+}[] = [
+  { value: "system", label: "System", icon: Monitor },
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+];
+
 function SettingsPage() {
+  const isHosted = isHostedClientAuthMode();
+  const { themePreference, setThemePreference } = useThemePreference();
+
   const [isOptedOut, setIsOptedOut] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUnavailable, setIsUnavailable] = useState(false);
 
   useEffect(() => {
+    if (!isHosted) {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function loadPreference() {
@@ -43,7 +57,7 @@ function SettingsPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isHosted]);
 
   const analyticsEnabled = isOptedOut === false;
 
@@ -67,37 +81,60 @@ function SettingsPage() {
 
   return (
     <div className="h-full overflow-auto bg-base-100 px-4 py-8 pb-24 md:px-6 md:py-12 md:pb-8">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <div>
-          <p className="text-sm font-medium text-base-content/40">Settings</p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight">
-            Privacy controls
-          </h1>
-          <p className="mt-2 text-sm text-base-content/60">
-            Control optional product analytics for this browser.
-          </p>
-        </div>
+      <div className="mx-auto max-w-xl space-y-10">
+        <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
 
-        <section className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <ShieldCheck className="size-5" />
-              </div>
+        <section className="space-y-3">
+          <h2 className="text-sm font-medium text-base-content/50">
+            Appearance
+          </h2>
+          <div className="flex items-center justify-between gap-6">
+            <span className="text-sm">Theme</span>
+            <div
+              role="radiogroup"
+              aria-label="Theme preference"
+              className="flex gap-0.5 rounded-lg bg-base-200 p-0.5"
+            >
+              {THEME_OPTIONS.map((option) => {
+                const isActive = option.value === themePreference;
+                const Icon = option.icon;
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isActive}
+                    aria-label={option.label}
+                    className={`flex cursor-pointer items-center justify-center rounded-md px-3 py-1.5 transition-colors ${
+                      isActive
+                        ? "bg-base-100 text-base-content shadow-sm"
+                        : "text-base-content/50 hover:text-base-content/80"
+                    }`}
+                    onClick={() => setThemePreference(option.value)}
+                  >
+                    <Icon className="size-4" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {isHosted ? (
+          <section className="space-y-3">
+            <h2 className="text-sm font-medium text-base-content/50">
+              Analytics
+            </h2>
+            <div className="flex items-start justify-between gap-6">
               <div>
-                <h2 className="font-semibold">Product analytics</h2>
+                <p className="text-sm">Help improve OpenSEO</p>
                 <p className="mt-1 text-sm text-base-content/60">
-                  Help us improve hosted OpenSEO with PostHog analytics, error
-                  monitoring, and session replay. Form inputs are masked before
-                  recording.
+                  {isUnavailable
+                    ? "Not configured for this deployment."
+                    : "Share analytics and usage data."}
                 </p>
               </div>
-            </div>
-
-            <label className="flex cursor-pointer items-center gap-3 self-start">
-              <span className="text-sm font-medium text-base-content/70">
-                {analyticsEnabled ? "On" : "Off"}
-              </span>
               <input
                 type="checkbox"
                 className="toggle toggle-primary"
@@ -108,34 +145,9 @@ function SettingsPage() {
                 }}
                 aria-label="Enable product analytics"
               />
-            </label>
-          </div>
-
-          <div className="mt-5 rounded-lg bg-base-200/70 px-4 py-3 text-sm text-base-content/60">
-            {isUnavailable ? (
-              <p>
-                Analytics is not configured for this deployment, so there is
-                nothing to disable.
-              </p>
-            ) : (
-              <p>
-                This opt-out is stored on this browser. If you use OpenSEO from
-                another browser or device, update the setting there too.
-              </p>
-            )}
-          </div>
-        </section>
-
-        <p className="text-sm text-base-content/50">
-          Read the hosted service privacy policy at{" "}
-          <a
-            href="https://openseo.so/privacy"
-            className="link link-hover text-base-content"
-          >
-            openseo.so/privacy
-          </a>
-          .
-        </p>
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
