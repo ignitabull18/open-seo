@@ -168,11 +168,7 @@ export const rankTrackingKeywords = sqliteTable(
   ],
 );
 
-// One row per check execution (manual or scheduled).
-// A partial unique index on `config_id WHERE status IN ('pending','running')`
-// enforces at most one in-flight run per config at the DB level, which is how
-// duplicate-trigger protection is implemented — INSERT of a second pending run
-// for the same config fails with a unique-constraint violation.
+// One row per check execution (manual or scheduled)
 export const rankCheckRuns = sqliteTable(
   "rank_check_runs",
   {
@@ -202,10 +198,22 @@ export const rankCheckRuns = sqliteTable(
   (table) => [
     index("rank_check_runs_config_idx").on(table.configId, table.startedAt),
     index("rank_check_runs_project_idx").on(table.projectId, table.startedAt),
-    uniqueIndex("rank_check_runs_one_active_per_config_idx")
-      .on(table.configId)
-      .where(sql`${table.status} IN ('pending', 'running')`),
   ],
+);
+
+// One active lock per rank tracking config to prevent overlapping runs
+export const rankCheckLocks = sqliteTable(
+  "rank_check_locks",
+  {
+    configId: text("config_id")
+      .primaryKey()
+      .references(() => rankTrackingConfigs.id, { onDelete: "cascade" }),
+    runId: text("run_id").notNull(),
+    acquiredAt: text("acquired_at")
+      .notNull()
+      .default(sql`(current_timestamp)`),
+  },
+  (table) => [index("rank_check_locks_run_idx").on(table.runId)],
 );
 
 // One row per keyword per device per check run
@@ -362,4 +370,33 @@ export const auditLighthouseResults = sqliteTable(
     payloadSizeBytes: integer("payload_size_bytes"),
   },
   (table) => [index("audit_lighthouse_results_audit_id_idx").on(table.auditId)],
+);
+
+// Personal access tokens for MCP / future general API access.
+// userId is plain text (not FK) because the user identifier comes from
+// different sources across auth modes (better-auth user.id, delegated_users.id,
+// or a synthesized "local" id for local_noauth Docker).
+export const mcpTokens = sqliteTable(
+  "mcp_tokens",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    tokenHash: text("token_hash").notNull().unique(),
+    tokenPrefix: text("token_prefix").notNull(),
+    scopes: text("scopes").notNull().default('["mcp"]'),
+    lastUsedAt: text("last_used_at"),
+    expiresAt: text("expires_at"),
+    revokedAt: text("revoked_at"),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(current_timestamp)`),
+  },
+  (table) => [
+    index("mcp_tokens_user_idx").on(table.userId),
+    index("mcp_tokens_org_idx").on(table.organizationId),
+  ],
 );

@@ -15,6 +15,9 @@
   ],
   "project": ["**/*.{js,mjs,ts,tsx}", "!src/routeTree.gen.ts", "!web/**"],
   "ignore": ["drizzle-prod.config.ts"],
+  "ignoreIssues": {
+    "src/db/app.schema.ts": ["exports"],
+  },
   // Disable Drizzle plugin - it tries to load drizzle.config.ts which imports cloudflare:workers
   "drizzle": false,
   "ignoreDependencies": [

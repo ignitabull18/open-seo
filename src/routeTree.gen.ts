@@ -20,6 +20,7 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AuthenticatedSubscribeRouteImport } from './routes/_authenticated.subscribe'
 import { Route as AuthSignUpRouteImport } from './routes/_auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth.sign-in'
+import { Route as AppTokensRouteImport } from './routes/_app/tokens'
 import { Route as AppSupportRouteImport } from './routes/_app/support'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppBillingRouteImport } from './routes/_app/billing'
@@ -92,6 +93,11 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
+} as any)
+const AppTokensRoute = AppTokensRouteImport.update({
+  id: '/tokens',
+  path: '/tokens',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppSupportRoute = AppSupportRouteImport.update({
   id: '/support',
@@ -216,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AppBillingRoute
   '/settings': typeof AppSettingsRoute
   '/support': typeof AppSupportRoute
+  '/tokens': typeof AppTokensRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/subscribe': typeof AuthenticatedSubscribeRoute
@@ -246,6 +253,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AppBillingRoute
   '/settings': typeof AppSettingsRoute
   '/support': typeof AppSupportRoute
+  '/tokens': typeof AppTokensRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/subscribe': typeof AuthenticatedSubscribeRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/_app/billing': typeof AppBillingRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/support': typeof AppSupportRoute
+  '/_app/tokens': typeof AppTokensRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_authenticated/subscribe': typeof AuthenticatedSubscribeRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/settings'
     | '/support'
+    | '/tokens'
     | '/sign-in'
     | '/sign-up'
     | '/subscribe'
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/settings'
     | '/support'
+    | '/tokens'
     | '/sign-in'
     | '/sign-up'
     | '/subscribe'
@@ -370,6 +381,7 @@ export interface FileRouteTypes {
     | '/_app/billing'
     | '/_app/settings'
     | '/_app/support'
+    | '/_app/tokens'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
     | '/_authenticated/subscribe'
@@ -484,6 +496,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_app/tokens': {
+      id: '/_app/tokens'
+      path: '/tokens'
+      fullPath: '/tokens'
+      preLoaderRoute: typeof AppTokensRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/_app/support': {
       id: '/_app/support'
@@ -639,6 +658,7 @@ interface AppRouteRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupportRoute: typeof AppSupportRoute
+  AppTokensRoute: typeof AppTokensRoute
   AppIndexRoute: typeof AppIndexRoute
   AppHelpDataforseoApiKeyRoute: typeof AppHelpDataforseoApiKeyRoute
 }
@@ -647,6 +667,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppBillingRoute: AppBillingRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupportRoute: AppSupportRoute,
+  AppTokensRoute: AppTokensRoute,
   AppIndexRoute: AppIndexRoute,
   AppHelpDataforseoApiKeyRoute: AppHelpDataforseoApiKeyRoute,
 }
