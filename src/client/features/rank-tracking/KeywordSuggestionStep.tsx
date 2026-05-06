@@ -359,12 +359,7 @@ export function KeywordSuggestionStep({
                 className="hover:bg-base-200/50 cursor-pointer"
                 onClick={(event) => {
                   if (
-                    applyShiftRangeSelection(
-                      event,
-                      row,
-                      table,
-                      selectAnchorRef,
-                    )
+                    applyShiftRangeSelection(event, row, table, selectAnchorRef)
                   ) {
                     return;
                   }
