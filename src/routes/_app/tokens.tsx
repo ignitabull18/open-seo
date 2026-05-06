@@ -66,8 +66,9 @@ function TokensPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">API Tokens</h1>
           <p className="mt-2 text-sm text-base-content/70">
-            Personal access tokens for OpenSEO API access. Create a token for
-            each external client you connect.
+            Personal access tokens for the OpenSEO MCP server. Use these to
+            connect Claude Code, Claude Desktop, Cursor, ChatGPT custom
+            connectors, and other MCP clients.
           </p>
         </div>
 
@@ -174,6 +175,23 @@ function TokensPage() {
           )}
         </section>
 
+        <section className="space-y-3 rounded-lg border border-base-300 p-4">
+          <h2 className="text-sm font-semibold">Connecting an MCP client</h2>
+          <p className="text-xs text-base-content/70">
+            Configure your MCP client with the OpenSEO endpoint and your token:
+          </p>
+          <pre className="overflow-x-auto rounded bg-base-200 p-3 text-xs font-mono">
+            {`URL: https://app.openseo.so/mcp
+Header: Authorization: Bearer <your-token>`}
+          </pre>
+          <p className="text-xs text-base-content/70">
+            For Claude Code:{" "}
+            <code className="rounded bg-base-200 px-1.5 py-0.5">
+              claude mcp add openseo https://app.openseo.so/mcp --header
+              "Authorization: Bearer YOUR_TOKEN"
+            </code>
+          </p>
+        </section>
       </div>
     </div>
   );

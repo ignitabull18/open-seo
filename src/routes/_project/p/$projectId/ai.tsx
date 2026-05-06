@@ -90,16 +90,38 @@ function AiPage() {
           </a>
         </section>
 
-        {/* Use any coding agent */}
+        {/* OpenSEO MCP */}
         <section className="mt-12">
-          <h2 className="text-xl font-semibold">Use any coding agent</h2>
+          <h2 className="text-xl font-semibold">OpenSEO MCP server</h2>
           <p className="mt-2 text-sm text-base-content/70 leading-relaxed">
-            Pair your preferred agent with the DataForSEO MCP server to access
-            keyword volumes, SERP results, backlink profiles, and more.
+            Drive OpenSEO from your favorite agent — keyword research, SERPs,
+            domain analysis, backlinks, and rank tracking — with deep links back
+            into the dashboard.
           </p>
           <p className="mt-3 text-sm text-base-content/60">
-            Claude Code &middot; Cursor &middot; Windsurf &middot; Codex
-            &middot; any MCP-compatible agent
+            Claude Code &middot; Claude Desktop &middot; Cursor &middot; ChatGPT
+            custom connectors &middot; Codex &middot; any MCP-compatible agent
+          </p>
+          <pre className="mt-4 overflow-x-auto rounded-lg border border-base-300 bg-base-200 p-3 text-xs font-mono">
+            {`URL: https://app.openseo.so/mcp
+Header: Authorization: Bearer <your-token>`}
+          </pre>
+          <a
+            href="/tokens"
+            className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-base-content hover:text-base-content/60 transition-colors"
+          >
+            Create an API token
+            <ArrowUpRight className="size-3.5" />
+          </a>
+        </section>
+
+        {/* Use any coding agent */}
+        <section className="mt-12">
+          <h2 className="text-xl font-semibold">Plus DataForSEO MCP</h2>
+          <p className="mt-2 text-sm text-base-content/70 leading-relaxed">
+            For raw DataForSEO endpoints we don't expose directly (Labs research
+            depths, On-Page audits, Trends, etc.) attach the official DataForSEO
+            MCP alongside.
           </p>
           <a
             href={DATAFORSEO_MCP_DOCS_URL}

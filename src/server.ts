@@ -7,8 +7,17 @@ import { beginRankCheckRun } from "@/server/features/rank-tracking/services/rank
 import { customerHasPaidPlan } from "@/server/billing/subscription";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import { computeNextCheckAt } from "@/shared/rank-tracking";
+import { mcpFetch } from "@/mcp/handler";
 
-const fetch = createStartHandler(defaultStreamHandler);
+const tanstackFetch = createStartHandler(defaultStreamHandler);
+
+async function fetch(request: Request): Promise<Response> {
+  const url = new URL(request.url);
+  if (url.pathname === "/mcp" || url.pathname.startsWith("/mcp/")) {
+    return mcpFetch(request);
+  }
+  return tanstackFetch(request);
+}
 
 // Export Workflow classes as named exports
 export { SiteAuditWorkflow } from "./server/workflows/SiteAuditWorkflow";
