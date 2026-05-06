@@ -5,6 +5,14 @@ import { packAuthInfo } from "@/mcp/context";
 import { deriveBaseUrlFromRequest } from "@/mcp/urls";
 import { whoamiTool } from "@/mcp/tools/whoami";
 import { listProjectsTool } from "@/mcp/tools/list-projects";
+import { listSavedKeywordsTool } from "@/mcp/tools/list-saved-keywords";
+import { researchKeywordsTool } from "@/mcp/tools/research-keywords";
+import { saveKeywordsTool } from "@/mcp/tools/save-keywords";
+import { getDomainOverviewTool } from "@/mcp/tools/get-domain-overview";
+import { getDomainKeywordSuggestionsTool } from "@/mcp/tools/get-domain-keyword-suggestions";
+import { getBacklinksOverviewTool } from "@/mcp/tools/get-backlinks-overview";
+import { dfsSerpLiveTool } from "@/mcp/tools/dfs-serp-live";
+import { getRankTrackerTool } from "@/mcp/tools/get-rank-tracker";
 
 const SERVER_INFO = {
   name: "OpenSEO",
@@ -20,6 +28,46 @@ function buildServer() {
     listProjectsTool.name,
     listProjectsTool.config,
     listProjectsTool.handler,
+  );
+  server.registerTool(
+    listSavedKeywordsTool.name,
+    listSavedKeywordsTool.config,
+    listSavedKeywordsTool.handler,
+  );
+  server.registerTool(
+    researchKeywordsTool.name,
+    researchKeywordsTool.config,
+    researchKeywordsTool.handler,
+  );
+  server.registerTool(
+    saveKeywordsTool.name,
+    saveKeywordsTool.config,
+    saveKeywordsTool.handler,
+  );
+  server.registerTool(
+    getDomainOverviewTool.name,
+    getDomainOverviewTool.config,
+    getDomainOverviewTool.handler,
+  );
+  server.registerTool(
+    getDomainKeywordSuggestionsTool.name,
+    getDomainKeywordSuggestionsTool.config,
+    getDomainKeywordSuggestionsTool.handler,
+  );
+  server.registerTool(
+    getBacklinksOverviewTool.name,
+    getBacklinksOverviewTool.config,
+    getBacklinksOverviewTool.handler,
+  );
+  server.registerTool(
+    dfsSerpLiveTool.name,
+    dfsSerpLiveTool.config,
+    dfsSerpLiveTool.handler,
+  );
+  server.registerTool(
+    getRankTrackerTool.name,
+    getRankTrackerTool.config,
+    getRankTrackerTool.handler,
   );
   return server;
 }
