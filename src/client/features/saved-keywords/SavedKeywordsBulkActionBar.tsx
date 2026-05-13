@@ -1,16 +1,8 @@
-import {
-  ChevronDown,
-  Copy,
-  Download,
-  FileDown,
-  Loader2,
-  Sheet,
-  Tags,
-  Trash2,
-} from "lucide-react";
+import { Copy, FileDown, Sheet, Tags, Trash2 } from "lucide-react";
 import {
   TableBulkActionBar,
   TableBulkActionButton,
+  TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
 
 export function SavedKeywordsBulkActionBar({
@@ -49,55 +41,26 @@ export function SavedKeywordsBulkActionBar({
               Tag
             </TableBulkActionButton>
 
-            <div className="dropdown dropdown-top dropdown-end">
-              <button
-                type="button"
-                tabIndex={0}
-                disabled={exportBusy}
-                aria-haspopup="menu"
-                className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-base-content/85 hover:bg-base-content/10 disabled:opacity-50"
-              >
-                {exportBusy ? (
-                  <Loader2 className="size-3.5 animate-spin" />
-                ) : (
-                  <Download className="size-3.5" />
-                )}
-                Export
-                <ChevronDown className="size-3 opacity-60" />
-              </button>
-              <ul
-                tabIndex={0}
-                role="menu"
-                className="dropdown-content menu z-10 mb-2 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
-              >
-                <li>
-                  <button type="button" onClick={onCopy}>
-                    <Copy className="size-4" />
-                    Copy keywords
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={onExportSheets}
-                    disabled={exportBusy}
-                  >
-                    <Sheet className="size-4" />
-                    Export to Sheets
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    onClick={onExportCsv}
-                    disabled={exportBusy}
-                  >
-                    <FileDown className="size-4" />
-                    Export CSV
-                  </button>
-                </li>
-              </ul>
-            </div>
+            <TableBulkExportMenu
+              busy={exportBusy}
+              actions={[
+                {
+                  label: "Copy keywords",
+                  icon: <Copy className="size-4" />,
+                  onClick: onCopy,
+                },
+                {
+                  label: "Export to Sheets",
+                  icon: <Sheet className="size-4" />,
+                  onClick: onExportSheets,
+                },
+                {
+                  label: "Export CSV",
+                  icon: <FileDown className="size-4" />,
+                  onClick: onExportCsv,
+                },
+              ]}
+            />
           </div>
 
           <div className="flex items-center border-l border-base-content/10 px-1.5">

@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ChevronDown, Download, Loader2, X } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function TableBulkActionBar({
@@ -74,5 +74,56 @@ export function TableBulkActionButton({
       {icon}
       {children}
     </button>
+  );
+}
+
+export function TableBulkExportMenu({
+  actions,
+  busy,
+}: {
+  actions: Array<{
+    label: ReactNode;
+    icon?: ReactNode;
+    onClick: () => void;
+    disabled?: boolean;
+  }>;
+  busy?: boolean;
+}) {
+  return (
+    <div className="dropdown dropdown-top dropdown-end">
+      <button
+        type="button"
+        tabIndex={0}
+        disabled={busy}
+        aria-haspopup="menu"
+        className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-base-content/85 hover:bg-base-content/10 disabled:opacity-50"
+      >
+        {busy ? (
+          <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <Download className="size-3.5" />
+        )}
+        Export
+        <ChevronDown className="size-3 opacity-60" />
+      </button>
+      <ul
+        tabIndex={0}
+        role="menu"
+        className="dropdown-content menu z-10 mb-2 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+      >
+        {actions.map((action, index) => (
+          <li key={index}>
+            <button
+              type="button"
+              onClick={action.onClick}
+              disabled={busy || action.disabled}
+            >
+              {action.icon}
+              {action.label}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

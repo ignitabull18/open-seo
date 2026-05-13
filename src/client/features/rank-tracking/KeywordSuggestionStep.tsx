@@ -5,8 +5,11 @@ import {
   type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
-import { Loader2, AlertCircle, X } from "lucide-react";
+import { Loader2, AlertCircle, FileDown, Sheet, X } from "lucide-react";
 import { toast } from "sonner";
+import { buildCsv, downloadCsv } from "@/client/lib/csv";
+import { exportTableToSheets } from "@/client/lib/exportToSheets";
+import { captureClientEvent } from "@/client/lib/posthog";
 import { getDomainKeywordSuggestions } from "@/serverFunctions/domain";
 import { addTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
@@ -18,6 +21,7 @@ import {
 import {
   TableBulkActionBar,
   TableBulkActionButton,
+  TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
 import { SortableHeader } from "./RankTrackingColumns";
 import {
@@ -33,6 +37,12 @@ type SuggestedKeyword = {
 };
 
 const PRE_SELECT_COUNT = 20;
+const SUGGESTED_KEYWORD_EXPORT_HEADERS = [
+  "Keyword",
+  "Position",
+  "Volume",
+  "Traffic",
+];
 
 const baseColumns: ColumnDef<SuggestedKeyword>[] = [
   {
@@ -232,6 +242,32 @@ export function KeywordSuggestionStep({
       addMutation.mutate(selectedKeywords);
     }
   };
+  const selectedSuggestionRows = table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original);
+  const selectedSuggestionExportRows = selectedSuggestionRows.map((row) => [
+    row.keyword,
+    row.position ?? "",
+    row.searchVolume ?? "",
+    row.traffic ?? "",
+  ]);
+  const handleExportSelectionToSheets = () => {
+    void exportTableToSheets({
+      headers: SUGGESTED_KEYWORD_EXPORT_HEADERS,
+      rows: selectedSuggestionExportRows,
+      feature: "rank_tracking",
+    });
+  };
+  const handleExportSelectionCsv = () => {
+    downloadCsv(
+      `rank-tracking-suggestions-${domain}.csv`,
+      buildCsv(SUGGESTED_KEYWORD_EXPORT_HEADERS, selectedSuggestionExportRows),
+    );
+    captureClientEvent("rank_tracking:suggestions_export_csv", {
+      result_count: selectedSuggestionRows.length,
+      scope: "selection",
+    });
+  };
 
   const sectionHeader = (title: string) => (
     <div className="flex items-center justify-between">
@@ -352,6 +388,20 @@ export function KeywordSuggestionStep({
               >
                 Add Keyword{selectedCount !== 1 ? "s" : ""}
               </TableBulkActionButton>
+              <TableBulkExportMenu
+                actions={[
+                  {
+                    label: "Export to Sheets",
+                    icon: <Sheet className="size-4" />,
+                    onClick: handleExportSelectionToSheets,
+                  },
+                  {
+                    label: "Export CSV",
+                    icon: <FileDown className="size-4" />,
+                    onClick: handleExportSelectionCsv,
+                  },
+                ]}
+              />
             </div>
           }
         />

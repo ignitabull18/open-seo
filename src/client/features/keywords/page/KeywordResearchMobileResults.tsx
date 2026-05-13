@@ -7,8 +7,13 @@ import {
   Sheet,
   SlidersHorizontal,
 } from "lucide-react";
-import { KEYWORD_RESEARCH_HEADERS } from "@/client/features/keywords/state/keywordControllerActions";
+import {
+  downloadKeywordResearchCsv,
+  KEYWORD_RESEARCH_HEADERS,
+  keywordResearchExportRow,
+} from "@/client/features/keywords/state/keywordControllerActions";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
+import { captureClientEvent } from "@/client/lib/posthog";
 import { SerpAnalysisCard } from "@/client/features/keywords/components";
 import { KeywordResearchDesktopTable } from "./KeywordResearchDesktopTable";
 import {
@@ -19,6 +24,7 @@ import type { KeywordResearchControllerState } from "./types";
 import {
   TableBulkActionBar,
   TableBulkActionButton,
+  TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
 
 type Props = {
@@ -93,11 +99,29 @@ function MobileKeywordResults({ controller }: Props) {
         : `Showing ${filteredRows.length} keywords`;
 
   const canExport = filteredRows.length > 0;
+  const selectedExportRows = filteredRows
+    .filter((row) => selectedRows.has(row.keyword))
+    .map(keywordResearchExportRow);
   const handleExportToSheets = () => {
     void exportTableToSheets({
       headers: KEYWORD_RESEARCH_HEADERS,
       rows: sheetsExportRows,
       feature: "keyword_research",
+    });
+  };
+  const handleExportSelectionToSheets = () => {
+    void exportTableToSheets({
+      headers: KEYWORD_RESEARCH_HEADERS,
+      rows: selectedExportRows,
+      feature: "keyword_research",
+    });
+  };
+  const handleExportSelectionCsv = () => {
+    downloadKeywordResearchCsv(selectedExportRows);
+    captureClientEvent("data:export", {
+      source_feature: "keyword_research",
+      result_count: selectedExportRows.length,
+      scope: "selection",
     });
   };
 
@@ -172,6 +196,20 @@ function MobileKeywordResults({ controller }: Props) {
             >
               Save
             </TableBulkActionButton>
+            <TableBulkExportMenu
+              actions={[
+                {
+                  label: "Export to Sheets",
+                  icon: <Sheet className="size-4" />,
+                  onClick: handleExportSelectionToSheets,
+                },
+                {
+                  label: "Export CSV",
+                  icon: <FileDown className="size-4" />,
+                  onClick: handleExportSelectionCsv,
+                },
+              ]}
+            />
           </div>
         }
       />

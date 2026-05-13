@@ -27,6 +27,7 @@ import { captureClientEvent } from "@/client/lib/posthog";
 import {
   TableBulkActionBar,
   TableBulkActionButton,
+  TableBulkExportMenu,
 } from "@/client/components/table/TableBulkActionBar";
 import type {
   DomainActiveTab,
@@ -125,6 +126,10 @@ export function DomainResultsCard({
   const exportTable = isKeywordsTab
     ? keywordsToTable(filteredKeywords)
     : pagesToTable(pagedPages);
+  const selectedKeywordRows = filteredKeywords.filter((row) =>
+    selectedKeywords.has(row.keyword),
+  );
+  const selectedKeywordExportTable = keywordsToTable(selectedKeywordRows);
 
   const handleCopy = async () => {
     const text = JSON.stringify(currentRows, null, 2);
@@ -152,6 +157,28 @@ export function DomainResultsCard({
         result_count: currentRows.length,
       });
     }
+  };
+  const handleExportSelectionToSheets = () => {
+    void exportTableToSheets({
+      headers: selectedKeywordExportTable.headers,
+      rows: selectedKeywordExportTable.rows,
+      feature: "domain_overview",
+    });
+  };
+  const handleDownloadSelectionCsv = () => {
+    downloadCsv(
+      `${overview.domain}-selected-keywords.csv`,
+      buildCsv(
+        selectedKeywordExportTable.headers,
+        selectedKeywordExportTable.rows,
+      ),
+    );
+
+    captureClientEvent("data:export", {
+      source_feature: "domain_overview",
+      result_count: selectedKeywordRows.length,
+      scope: "selection",
+    });
   };
 
   return (
@@ -248,6 +275,20 @@ export function DomainResultsCard({
               >
                 Save Keywords
               </TableBulkActionButton>
+              <TableBulkExportMenu
+                actions={[
+                  {
+                    label: "Export to Sheets",
+                    icon: <Sheet className="size-4" />,
+                    onClick: handleExportSelectionToSheets,
+                  },
+                  {
+                    label: "Download CSV",
+                    icon: <Download className="size-4" />,
+                    onClick: handleDownloadSelectionCsv,
+                  },
+                ]}
+              />
             </div>
           }
         />
