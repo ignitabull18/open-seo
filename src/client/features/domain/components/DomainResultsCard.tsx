@@ -24,6 +24,10 @@ import {
 import { buildCsv, downloadCsv } from "@/client/lib/csv";
 import { exportTableToSheets } from "@/client/lib/exportToSheets";
 import { captureClientEvent } from "@/client/lib/posthog";
+import {
+  TableBulkActionBar,
+  TableBulkActionButton,
+} from "@/client/components/table/TableBulkActionBar";
 import type {
   DomainActiveTab,
   DomainOverviewData,
@@ -41,6 +45,7 @@ type Props = {
   currentSortOrder: SortOrder;
   searchDraft: string;
   selectedKeywords: Set<string>;
+  setSelectedKeywords: Dispatch<SetStateAction<Set<string>>>;
   visibleKeywords: string[];
   filteredKeywords: KeywordRow[];
   pagedPages: PageRow[];
@@ -85,6 +90,7 @@ export function DomainResultsCard({
   currentSortOrder,
   searchDraft,
   selectedKeywords,
+  setSelectedKeywords,
   visibleKeywords,
   filteredKeywords,
   pagedPages,
@@ -190,20 +196,6 @@ export function DomainResultsCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {activeTab === "keywords" ? (
-            <button
-              className="btn btn-sm"
-              onClick={onSaveKeywords}
-              disabled={selectedKeywords.size === 0 || !canSaveKeywords}
-              title={
-                !canSaveKeywords && selectedKeywords.size > 0
-                  ? "Re-run search to save keywords for the selected location"
-                  : undefined
-              }
-            >
-              <Save className="size-4" /> Save Keywords
-            </button>
-          ) : null}
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-sm gap-1">
               <Download className="size-4" />
@@ -242,6 +234,24 @@ export function DomainResultsCard({
           </div>
         </div>
       </div>
+
+      {activeTab === "keywords" ? (
+        <TableBulkActionBar
+          selectedCount={selectedKeywords.size}
+          onClear={() => setSelectedKeywords(new Set())}
+          actions={
+            <div className="flex items-center px-1.5">
+              <TableBulkActionButton
+                icon={<Save className="size-3.5" />}
+                onClick={onSaveKeywords}
+                disabled={!canSaveKeywords}
+              >
+                Save Keywords
+              </TableBulkActionButton>
+            </div>
+          }
+        />
+      ) : null}
 
       <div className="flex items-center gap-2 px-4 py-2 border-b border-base-300">
         {isKeywordsTab ? (

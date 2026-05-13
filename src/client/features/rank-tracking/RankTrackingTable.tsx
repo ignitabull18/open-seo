@@ -6,6 +6,10 @@ import {
   AppDataTable,
   useAppTable,
 } from "@/client/components/table/AppDataTable";
+import {
+  TableBulkActionBar,
+  TableBulkActionButton,
+} from "@/client/components/table/TableBulkActionBar";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { removeTrackingKeywords } from "@/serverFunctions/rank-tracking";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
@@ -101,28 +105,21 @@ export function RankTrackingTable({
 
   return (
     <>
-      {/* Bulk action bar */}
-      {selectedCount > 0 && (
-        <div className="flex items-center gap-3 rounded-lg bg-base-200 px-3 py-2 text-sm">
-          <span className="text-base-content/70">
-            {selectedCount} keyword
-            {selectedCount !== 1 ? "s" : ""} selected
-          </span>
-          <button
-            className="btn btn-error btn-xs gap-1"
-            onClick={() => setShowConfirm(true)}
-          >
-            <Trash2 className="size-3" />
-            Remove
-          </button>
-          <button
-            className="btn btn-ghost btn-xs"
-            onClick={() => table.resetRowSelection()}
-          >
-            Clear
-          </button>
-        </div>
-      )}
+      <TableBulkActionBar
+        selectedCount={selectedCount}
+        onClear={() => table.resetRowSelection()}
+        actions={
+          <div className="flex items-center px-1.5">
+            <TableBulkActionButton
+              icon={<Trash2 className="size-3.5" />}
+              onClick={() => setShowConfirm(true)}
+              variant="danger"
+            >
+              Remove
+            </TableBulkActionButton>
+          </div>
+        }
+      />
 
       {/* Confirm modal */}
       {showConfirm && (

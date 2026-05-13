@@ -15,6 +15,10 @@ import {
   makeSelectionColumn,
   useAppTable,
 } from "@/client/components/table/AppDataTable";
+import {
+  TableBulkActionBar,
+  TableBulkActionButton,
+} from "@/client/components/table/TableBulkActionBar";
 import { SortableHeader } from "./RankTrackingColumns";
 import {
   applyShiftRangeSelection,
@@ -307,9 +311,6 @@ export function KeywordSuggestionStep({
         <p className="text-sm text-base-content/60">
           We found {data.length} keywords {domain} ranks for.
         </p>
-        <span className="text-xs text-base-content/50">
-          {selectedCount} of {data.length} selected
-        </span>
       </div>
 
       <AppDataTable
@@ -329,20 +330,31 @@ export function KeywordSuggestionStep({
         })}
       />
 
-      <div className="flex items-center justify-end gap-3 pt-1">
+      <div className="flex items-center justify-between gap-3 pt-1">
         <button className="btn btn-ghost btn-sm" onClick={onClose}>
           Skip
         </button>
-        <button
-          className="btn btn-primary btn-sm"
-          disabled={selectedCount === 0 || addMutation.isPending}
-          onClick={handleAdd}
-        >
-          {addMutation.isPending && (
-            <Loader2 className="size-3.5 animate-spin" />
-          )}
-          Add {selectedCount} Keyword{selectedCount !== 1 ? "s" : ""}
-        </button>
+        <TableBulkActionBar
+          selectedCount={selectedCount}
+          selectedLabel={`of ${data.length} selected`}
+          onClear={() => table.resetRowSelection()}
+          placement="inline"
+          actions={
+            <div className="flex items-center px-1.5">
+              <TableBulkActionButton
+                icon={
+                  addMutation.isPending ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : undefined
+                }
+                onClick={handleAdd}
+                disabled={addMutation.isPending}
+              >
+                Add Keyword{selectedCount !== 1 ? "s" : ""}
+              </TableBulkActionButton>
+            </div>
+          }
+        />
       </div>
     </div>
   );

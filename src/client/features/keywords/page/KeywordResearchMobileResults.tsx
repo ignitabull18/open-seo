@@ -16,6 +16,10 @@ import {
   useKeywordResearchPagination,
 } from "./KeywordResearchPagination";
 import type { KeywordResearchControllerState } from "./types";
+import {
+  TableBulkActionBar,
+  TableBulkActionButton,
+} from "@/client/components/table/TableBulkActionBar";
 
 type Props = {
   controller: KeywordResearchControllerState;
@@ -127,13 +131,6 @@ function MobileKeywordResults({ controller }: Props) {
           {keywordCountLabel}
         </span>
         <div className="flex-1" />
-        <button
-          className="btn btn-ghost btn-xs"
-          onClick={controller.handleSaveKeywords}
-          disabled={selectedRows.size === 0}
-        >
-          <Save className="size-3.5" />
-        </button>
         <div className="dropdown dropdown-end">
           <div
             tabIndex={0}
@@ -163,6 +160,21 @@ function MobileKeywordResults({ controller }: Props) {
           </ul>
         </div>
       </div>
+
+      <TableBulkActionBar
+        selectedCount={selectedRows.size}
+        onClear={() => controller.setSelectedRows(new Set())}
+        actions={
+          <div className="flex items-center px-1.5">
+            <TableBulkActionButton
+              icon={<Save className="size-3.5" />}
+              onClick={controller.handleSaveKeywords}
+            >
+              Save
+            </TableBulkActionButton>
+          </div>
+        }
+      />
 
       {showFilters ? <MobileFilters controller={controller} /> : null}
 

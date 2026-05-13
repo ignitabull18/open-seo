@@ -26,6 +26,10 @@ import {
   KeywordResearchPagination,
   useKeywordResearchPagination,
 } from "./KeywordResearchPagination";
+import {
+  TableBulkActionBar,
+  TableBulkActionButton,
+} from "@/client/components/table/TableBulkActionBar";
 
 const MONTH_SHORT_LABELS = [
   "Jan",
@@ -157,14 +161,6 @@ function DesktopTableCard({ controller }: Props) {
           {keywordCountLabel}
         </span>
         <div className="flex-1" />
-        <button
-          className="btn btn-ghost btn-sm gap-1"
-          onClick={controller.handleSaveKeywords}
-          disabled={selectedRows.size === 0}
-        >
-          <Save className="size-3.5" />
-          <span className="hidden lg:inline">Save Keywords</span>
-        </button>
         <div className="dropdown dropdown-end">
           <div
             tabIndex={0}
@@ -194,6 +190,21 @@ function DesktopTableCard({ controller }: Props) {
           </ul>
         </div>
       </div>
+
+      <TableBulkActionBar
+        selectedCount={selectedRows.size}
+        onClear={() => controller.setSelectedRows(new Set())}
+        actions={
+          <div className="flex items-center px-1.5">
+            <TableBulkActionButton
+              icon={<Save className="size-3.5" />}
+              onClick={controller.handleSaveKeywords}
+            >
+              Save Keywords
+            </TableBulkActionButton>
+          </div>
+        }
+      />
 
       {showFilters ? <DesktopFilters controller={controller} /> : null}
       <KeywordResearchDesktopTable
