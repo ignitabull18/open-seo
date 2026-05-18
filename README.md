@@ -116,12 +116,18 @@ Prerequisites:
 
 - Install Docker: https://www.docker.com/products/docker-desktop/
 
-Quickstart:
+Secure quickstart:
 
 1. `cp .env.example .env`
 2. Set `DATAFORSEO_API_KEY` in `.env`
-3. `docker compose up -d`
-4. Open `http://localhost:<PORT>` (default `3001`)
+3. Keep the default `AUTH_MODE=cloudflare_access` and set `TEAM_DOMAIN` + `POLICY_AUD` from your Cloudflare Access application
+4. Set `ALLOWED_HOST` to your protected hostname when deploying through Coolify or a reverse proxy
+5. `docker compose up -d`
+6. Open the Cloudflare Access-protected hostname, or `http://localhost:<PORT>` (default `3001`) for local testing
+
+For trusted local-only development without Cloudflare Access, explicitly set
+`AUTH_MODE=local_noauth`. Do not expose `local_noauth` deployments directly to
+the internet.
 
 By default, `compose.yaml` pulls the published image from GHCR:
 

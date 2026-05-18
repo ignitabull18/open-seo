@@ -1,8 +1,15 @@
 # Docker Self-Hosting
 
-Run OpenSEO locally with Docker.
+Run OpenSEO locally or in Coolify with Docker.
 
-In Docker mode, OpenSEO uses `AUTH_MODE=local_noauth` (no auth checks, local admin user `admin@localhost`). Only expose it behind your own auth-protected reverse proxy, tunnel, or private network.
+Docker self-hosting is secure-by-default: `compose.yaml` defaults to
+`AUTH_MODE=cloudflare_access` and passes Cloudflare Access settings into the
+container so the app and MCP endpoint validate the `cf-access-jwt-assertion`
+header before creating an OpenSEO user context.
+
+Use `AUTH_MODE=local_noauth` only for trusted local development on a private
+machine or private network. Do not expose `local_noauth` deployments directly to
+the internet.
 
 The default `compose.yaml` uses the published GHCR image:
 
@@ -11,32 +18,65 @@ The default `compose.yaml` uses the published GHCR image:
 ## Prerequisites
 
 - Docker Desktop (or Docker Engine + Docker Compose)
+- A DataForSEO API credential encoded as base64 `email:password`
+- For production/Coolify: a Cloudflare Access application in front of the OpenSEO route
 
-## Quickstart
+## Secure quickstart: Docker or Coolify behind Cloudflare Access
+
+1. Copy the example environment file:
 
 ```bash
 cp .env.example .env
+```
+
+2. Set the required values in `.env`:
+
+```bash
+DATAFORSEO_API_KEY=base64-email-colon-password
+AUTH_MODE=cloudflare_access
+TEAM_DOMAIN=https://your-team.cloudflareaccess.com
+POLICY_AUD=your-cloudflare-access-aud-tag
+ALLOWED_HOST=seo.example.com
+```
+
+3. Start the container:
+
+```bash
 docker compose up -d
 ```
 
-Set `DATAFORSEO_API_KEY` in `.env`, then open `http://localhost:<PORT>` (default `3001`).
+Docker Compose passes `.env` values into the container. `compose.yaml` also sets
+`CLOUDFLARE_INCLUDE_PROCESS_ENV=true` so the Cloudflare Vite runtime can read
+those values as Worker bindings during Docker self-hosting.
 
-Docker Compose passes `.env` values into the container, and `compose.yaml` enables `CLOUDFLARE_INCLUDE_PROCESS_ENV=true` so the Cloudflare Vite runtime can read them as Worker bindings during local self-hosting.
+If `AUTH_MODE=cloudflare_access` is selected but `TEAM_DOMAIN` or `POLICY_AUD`
+is missing, OpenSEO returns a clear configuration error instead of silently
+falling back to unauthenticated mode.
 
-Optional env values:
+## Coolify notes
 
-- `PORT` (defaults to `3001`)
-- `ALLOWED_HOST` (single reverse-proxy hostname to allow in Vite preview)
-- `AUTH_MODE=local_noauth` (already set in compose)
-- `OPEN_SEO_IMAGE` (defaults to `ghcr.io/every-app/open-seo:latest`)
+For Coolify, configure these as service environment variables:
 
-If you are putting Docker behind a reverse proxy or a temporary tunnel, remember that Docker self-hosting runs with app auth disabled. Only expose it behind your own auth-protected reverse proxy, tunnel, or private network, and add the public hostname before restarting:
+- `DATAFORSEO_API_KEY`: base64 `email:password`
+- `AUTH_MODE=cloudflare_access`
+- `TEAM_DOMAIN=https://your-team.cloudflareaccess.com`
+- `POLICY_AUD`: Cloudflare Access application AUD tag
+- `ALLOWED_HOST`: the public hostname Coolify/Cloudflare routes to OpenSEO
+- `PORT=3001` unless you intentionally change the exposed app port
+
+Keep Cloudflare Access enabled on the public route. OpenSEO validates Access JWTs
+for both the browser app and the self-hosted MCP transport.
+
+## Trusted local development mode
+
+For local-only testing without Cloudflare Access, explicitly opt in:
 
 ```bash
-ALLOWED_HOST=yourdomain.com docker compose up -d
+AUTH_MODE=local_noauth docker compose up -d
 ```
 
-You can also persist it in `.env`.
+`local_noauth` injects the local admin user `admin@localhost`. It is intended for
+trusted local development only.
 
 ## Pin to a specific image tag
 
@@ -90,12 +130,29 @@ To confirm Docker Compose is using the expected environment variables:
 docker compose config
 ```
 
-Check that `AUTH_MODE=local_noauth`, and that `DATAFORSEO_API_KEY` is the base64
-encoded value of your DataForSEO email and API password in this format:
-`email:password`.
+Check that the rendered config includes:
+
+- `AUTH_MODE=cloudflare_access` for secure deployments, or an explicit
+  `AUTH_MODE=local_noauth` only for trusted local development
+- `TEAM_DOMAIN=https://your-team.cloudflareaccess.com`
+- `POLICY_AUD=your-cloudflare-access-aud-tag`
+- `CLOUDFLARE_INCLUDE_PROCESS_ENV=true`
+- `DATAFORSEO_API_KEY` as the base64 encoded value of your DataForSEO email and
+  API password in this format: `email:password`
 
 If you changed `.env`, recreate the container so Compose reapplies it:
 
 ```bash
 docker compose up -d --force-recreate open-seo
 ```
+
+## Manual verification path
+
+1. Start with `AUTH_MODE=cloudflare_access`, `TEAM_DOMAIN`, and `POLICY_AUD` set.
+2. Access the app through the Cloudflare-protected hostname and confirm the UI
+   loads after Access authentication.
+3. Call the MCP route through the same protected hostname and confirm requests
+   without a valid `cf-access-jwt-assertion` are rejected.
+4. Temporarily remove `POLICY_AUD` and restart; the app should return a clear
+   `AUTH_MODE=cloudflare_access requires TEAM_DOMAIN and POLICY_AUD` error.
+5. Restore `POLICY_AUD` and recreate the container.

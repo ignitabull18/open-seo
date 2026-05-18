@@ -87,7 +87,7 @@ function handleOpenSeoMcpRequest(
     authContext: props ? { props } : undefined,
     corsOptions: {
       headers:
-        "Authorization, Content-Type, Last-Event-ID, mcp-protocol-version, mcp-session-id",
+        "Authorization, Content-Type, Last-Event-ID, cf-access-jwt-assertion, mcp-protocol-version, mcp-session-id",
       exposeHeaders: "mcp-protocol-version, mcp-session-id",
     },
   });
