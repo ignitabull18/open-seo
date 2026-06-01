@@ -14,12 +14,24 @@ import {
   HOSTED_PASSWORD_MAX_LENGTH,
   HOSTED_PASSWORD_MIN_LENGTH,
 } from "@/lib/auth-options";
+import {
+  DEFAULT_HOSTED_ALLOWED_EMAIL,
+  HOSTED_SIGNUP_FORBIDDEN_MESSAGE,
+  normalizeHostedEmail,
+} from "@/lib/hosted-allowlist";
 import { z } from "zod";
 
 const signUpSchema = z
   .object({
     name: z.string().trim(),
-    email: z.string().trim().email("Enter a valid email address."),
+    email: z
+      .string()
+      .trim()
+      .email("Enter a valid email address.")
+      .refine(
+        (email) => normalizeHostedEmail(email) === DEFAULT_HOSTED_ALLOWED_EMAIL,
+        HOSTED_SIGNUP_FORBIDDEN_MESSAGE,
+      ),
     password: z
       .string()
       .min(

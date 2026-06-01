@@ -1,11 +1,21 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "open-seo",
+  "account_id": "2b66aa2be0f7116c930a57acb4f0fc8e",
   "main": "src/server.ts",
-  "compatibility_date": "2025-09-02",
+  "workers_dev": true,
+  "preview_urls": false,
+  "compatibility_date": "2026-05-28",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
     "enabled": true,
+  },
+  "vars": {
+    "AUTH_MODE": "hosted",
+    "BETTER_AUTH_URL": "https://open-seo.lingering-rain-68b6.workers.dev",
+    "BYPASS_EMAIL_VERIFICATION": "true",
+    "HOSTED_ALLOWED_EMAILS": "jeremy@ignitabull.com",
+    "VITE_SHOW_DEVTOOLS": "false",
   },
   // Uncomment when deploying to the openseo.so Cloudflare account. Self-hosters
   // should leave this commented (or replace with their own zone) — otherwise
@@ -32,18 +42,18 @@
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "4abd52f3f2c549ac83cc2cb4ceec8620",
+      "id": "d55a051f42e54709a4762a2987daa72e",
     },
     {
       "binding": "OAUTH_KV",
-      "id": "bd1759494309474a9b423b029967b0db",
+      "id": "62deebe3a0d54b16ae659feb51869933",
     },
   ],
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "open-seo",
-      "database_id": "37bee90a-e1aa-404f-b01e-b0d1d479bda1",
+      "database_id": "b97cb197-7518-44a2-a201-8cbd5b7475ec",
       "migrations_dir": "drizzle",
     },
   ],

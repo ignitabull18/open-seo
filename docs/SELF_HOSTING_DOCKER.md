@@ -43,7 +43,7 @@ You can also persist it in `.env`.
 Set `OPEN_SEO_IMAGE` in `.env` and restart:
 
 ```bash
-OPEN_SEO_IMAGE=ghcr.io/every-app/open-seo:v1.2.3
+OPEN_SEO_IMAGE=ghcr.io/every-app/open-seo:v0.0.12
 docker compose up -d
 ```
 

@@ -20,6 +20,7 @@ Easy to self-host and extend, but we have a managed version too:
   - [Cloudflare Self-Hosting](#cloudflare-self-hosting)
   - [Docker Self Hosting](#docker-self-hosting)
 - [Local Development](#local-development)
+- [Project Structure](#project-structure)
 - [Contributing](#contributing)
 - [SEO API Cost Reference](#seo-api-cost-reference)
 
@@ -108,7 +109,7 @@ Docker is recommended for getting started. It's super easy to get up and running
 
 _Cloudflare_
 
-If you love OpenSEO and want to use it across multiple devices or with your team, you can host it on Cloudflare which we'll be a SaaS-like experience. Also, this will have automatic database backups and other nice convenience features. It's just a bit more effort to get started if you're unfamiliar with Cloudflare.
+If you love OpenSEO and want to use it across multiple devices or with your team, you can host it on Cloudflare for a SaaS-like experience. Cloudflare hosting also gives you managed platform primitives such as D1, R2, KV, Workers, and Workflows. It's a bit more effort to get started if you're unfamiliar with Cloudflare.
 
 ## Docker Self Hosting
 
@@ -143,7 +144,7 @@ docker compose up -d --pull always
 Use a pinned version tag in `.env` if preferred:
 
 ```sh
-OPEN_SEO_IMAGE=ghcr.io/every-app/open-seo:v1.2.3
+OPEN_SEO_IMAGE=ghcr.io/every-app/open-seo:v0.0.12
 ```
 
 For more info, see [`docs/SELF_HOSTING_DOCKER.md`](./docs/SELF_HOSTING_DOCKER.md).
@@ -182,22 +183,19 @@ Configure .env.local:
 
    `printf '%s' 'YOUR_LOGIN:YOUR_PASSWORD' | base64`
 
-Run Locally:
+Run locally:
 
 ```sh
-# Option 1
 pnpm run dev
-
-# Option 2 (Recommended)
-# This log file makes it easier for your coding agent to debug.
-mkdir .logs
-touch .logs/dev-server.log
-
-# This command uses portless, which is great for worktrees. It also pipes logs to that fixed file, which is helpful for agent debugging output.
-pnpm dev:agents
 ```
 
-`pnpm dev:agents` runs through [portless](https://github.com/vercel-labs/portless) at `http://open-seo.localhost:1355` by default.
+Agent-friendly dev server:
+
+```sh
+pnpm run dev:agents
+```
+
+`pnpm run dev:agents` creates `.logs/dev-server.log`, runs through [portless](https://github.com/vercel-labs/portless), and serves the app at `http://open-seo.localhost:1355` by default.
 
 When using a git worktree, [portless](https://github.com/vercel-labs/portless) prefixes the branch name, for example `http://feature-name.open-seo.localhost:1355`.
 
@@ -221,10 +219,47 @@ pnpm run db:migrate:local
 - `AUTH_MODE=local_noauth`: local trusted mode, no auth check, injects `admin@localhost`.
 - `AUTH_MODE=hosted`: Better Auth-backed email/password mode. Requires Better Auth schema generation plus `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL`.
 
-Local scripts (`pnpm dev` and `pnpm dev:agents`) set `AUTH_MODE=local_noauth` automatically.
-Use `AUTH_MODE=cloudflare_access pnpm dev` when you specifically want to test Access validation locally.
+Local scripts (`pnpm run dev` and `pnpm run dev:agents`) set `AUTH_MODE=local_noauth` automatically.
+Use `AUTH_MODE=cloudflare_access pnpm run dev` when you specifically want to test Access validation locally.
 
 For Cloudflare deployments, ensure Cloudflare Access is enabled on your Worker route/domain and provide `TEAM_DOMAIN` + `POLICY_AUD` in environment variables.
+
+### Quality checks
+
+```sh
+pnpm run format:check
+pnpm run types:check
+pnpm run lint
+pnpm run test:ci
+pnpm run ci:check
+```
+
+If you change the marketing/docs site in `web/`, run its checks separately:
+
+```sh
+pnpm --dir web install
+pnpm --dir web run types:check
+pnpm --dir web run build
+```
+
+## Project Structure
+
+OpenSEO has two apps in one repository:
+
+- Root app: the self-hostable product app, built with TanStack Start and Cloudflare Workers.
+- `web/`: the marketing/docs site for `openseo.so`, with its own package and lockfile.
+
+Key product directories:
+
+- `src/routes/`: TanStack Router file routes.
+- `src/client/`: product UI, hooks, layout, styles, and client helpers.
+- `src/serverFunctions/`: server functions called by the client.
+- `src/server/features/`: server-side feature services and repositories.
+- `src/server/mcp/`: MCP server, OAuth provider, and MCP tools.
+- `src/server/workflows/`: Cloudflare Workflow logic for audits and rank checks.
+- `src/db/` and `drizzle/`: Drizzle schema and migrations.
+
+For the full map, see [`docs/PROJECT_STRUCTURE.md`](./docs/PROJECT_STRUCTURE.md). Agent-specific repository guidance lives in [`AGENTS.md`](./AGENTS.md).
 
 ## Contributing
 
@@ -240,7 +275,7 @@ If you want to contribute but are unsure where to start, open an issue and descr
 
 Use this section to estimate DataForSEO spend per request type. OpenSEO itself remains free; these are API usage costs only.
 
-As of February 26, 2026, DataForSEO’s public docs/pricing pages say:
+As of May 27, 2026, DataForSEO’s public docs/pricing pages say:
 
 - New accounts include **$1 free credit** to test the API.
 - The minimum top-up/payment is **$50**.
@@ -256,7 +291,7 @@ That means you can try OpenSEO for free with the starter credit, then decide if/
 
 ### 1) Rank tracking
 
-There are in-app estimates for this since its dependent on the settings you select.
+There are in-app estimates for this because cost depends on the settings you select.
 
 $2/month example:
 

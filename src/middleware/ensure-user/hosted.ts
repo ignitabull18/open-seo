@@ -1,7 +1,12 @@
 import { getAuth, hasHostedAuthConfig } from "@/lib/auth";
 import { getActiveOrganizationId } from "@/lib/auth-session";
+import {
+  HOSTED_SIGNUP_FORBIDDEN_MESSAGE,
+  isHostedEmailAllowed,
+} from "@/lib/hosted-allowlist";
 import { getOrCreateDefaultHostedOrganization } from "@/server/auth/default-hosted-organization";
 import { AppError } from "@/server/lib/errors";
+import { env } from "cloudflare:workers";
 import type { EnsuredUserContext } from "./types";
 
 async function requireHostedSession(headers: Headers) {
@@ -25,6 +30,11 @@ export async function resolveHostedContext(
   headers: Headers,
 ): Promise<EnsuredUserContext> {
   const session = await requireHostedSession(headers);
+
+  if (!isHostedEmailAllowed(session.user.email, env.HOSTED_ALLOWED_EMAILS)) {
+    throw new AppError("FORBIDDEN", HOSTED_SIGNUP_FORBIDDEN_MESSAGE);
+  }
+
   const activeOrganizationId = getActiveOrganizationId(session);
 
   if (activeOrganizationId) {

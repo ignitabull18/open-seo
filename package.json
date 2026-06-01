@@ -47,6 +47,9 @@
       "DATAFORSEO_API_KEY": {
         "description": "Base64-encoded `login:password` for DataForSEO API access."
       },
+      "HOSTED_ALLOWED_EMAILS": {
+        "description": "Comma-separated hosted auth signup/sign-in allowlist. This deployment is restricted to `jeremy@ignitabull.com`."
+      },
       "OAUTH_KV": {
         "description": "KV namespace used by the Cloudflare Workers OAuth provider for MCP client registrations, grants, and tokens."
       }

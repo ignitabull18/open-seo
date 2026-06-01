@@ -13,6 +13,8 @@ declare namespace Cloudflare {
     POSTHOG_HOST?: string;
     BETTER_AUTH_SECRET?: string;
     BETTER_AUTH_URL?: string;
+    BYPASS_EMAIL_VERIFICATION?: string;
+    HOSTED_ALLOWED_EMAILS?: string;
     LOOPS_API_KEY?: string;
     LOOPS_TRANSACTIONAL_VERIFY_EMAIL_ID?: string;
     LOOPS_TRANSACTIONAL_RESET_PASSWORD_ID?: string;
@@ -26,6 +28,7 @@ interface ImportMetaEnv {
   readonly AUTH_MODE?: "cloudflare_access" | "local_noauth" | "hosted";
   readonly POSTHOG_PUBLIC_KEY?: string;
   readonly POSTHOG_HOST?: string;
+  readonly VITE_SHOW_DEVTOOLS?: string;
 }
 
 interface ImportMeta {

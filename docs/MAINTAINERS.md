@@ -11,6 +11,8 @@ GitHub Releases are the main user-facing update channel for OpenSEO.
 
 ## Release notes workflow
 
+Before drafting release notes, confirm `package.json` has the intended release version. The latest published release note file should match the current version tag.
+
 Generate notes from commits since the latest semver tag:
 
 ```sh
@@ -20,8 +22,8 @@ pnpm release:notes
 Useful variants:
 
 ```sh
-pnpm release:notes -- --from v0.0.1 --to HEAD
-pnpm release:notes -- --draft v0.0.2
+pnpm release:notes -- --from <tag> --to HEAD
+pnpm release:notes -- --draft v<version>
 ```
 
 Supported inputs:
@@ -39,14 +41,14 @@ The generator:
 - groups the remaining changes into short user-facing sections
 - can create a draft GitHub release when `--draft` is provided
 
-Store finalized notes in `release-notes/` as versioned Markdown files such as `release-notes/v0.0.2.md`.
+Store finalized notes in `release-notes/` as versioned Markdown files such as `release-notes/v<version>.md`.
 
 Recommended release flow:
 
 ```sh
 pnpm -s release:notes
-# edit and save the final copy in release-notes/v0.0.2.md
-gh release create v0.0.2 --target main --title v0.0.2 --notes-file release-notes/v0.0.2.md
+# edit and save the final copy in release-notes/v<version>.md
+gh release create v<version> --target main --title v<version> --notes-file release-notes/v<version>.md
 ```
 
 For now, prefer patch releases while the project is still in rapid early development unless there is a clear reason to cut a minor or major release.
@@ -60,3 +62,16 @@ For convenience inside OpenCode, use:
 ```
 
 The command definition lives at `.opencode/command/release-notes.md` and forwards any extra arguments to the same generator script.
+
+## Documentation upkeep
+
+Keep these docs aligned when project structure, commands, or deployment behavior changes:
+
+- `README.md`: user-facing setup, self-hosting summary, local development, and cost reference.
+- `AGENTS.md`: coding-agent and contributor operating rules.
+- `docs/PROJECT_STRUCTURE.md`: repository map and ownership boundaries.
+- `docs/SELF_HOSTING_DOCKER.md`: Docker-specific setup and update flow.
+- `docs/SELF_HOSTING_CLOUDFLARE.md`: Cloudflare Deploy button flow, Access, MCP, and update guidance.
+- `.opencode/command/*.md`: OpenCode slash commands.
+
+When updating DataForSEO cost guidance, verify current public pricing first and include the date of the check in the README.
