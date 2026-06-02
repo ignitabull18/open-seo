@@ -21,7 +21,7 @@ Rules:
 
 ## Generated notes
 
-!`pnpm release:notes -- $ARGUMENTS`
+!`pnpm run release:notes -- $ARGUMENTS`
 
 After reviewing the generated notes:
 

@@ -16,14 +16,14 @@ Before drafting release notes, confirm `package.json` has the intended release v
 Generate notes from commits since the latest semver tag:
 
 ```sh
-pnpm release:notes
+pnpm run release:notes
 ```
 
 Useful variants:
 
 ```sh
-pnpm release:notes -- --from <tag> --to HEAD
-pnpm release:notes -- --draft v<version>
+pnpm run release:notes -- --from <tag> --to HEAD
+pnpm run release:notes -- --draft v<version>
 ```
 
 Supported inputs:

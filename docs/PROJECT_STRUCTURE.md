@@ -79,7 +79,9 @@ Key paths:
 Do not edit these by hand:
 
 - `src/routeTree.gen.ts`
+- `web/src/routeTree.gen.ts`
 - `worker-configuration.d.ts`
+- `web/worker-configuration.d.ts`
 - `src/db/better-auth-schema.ts`
 
 Regenerate them with the appropriate package scripts when their inputs change.

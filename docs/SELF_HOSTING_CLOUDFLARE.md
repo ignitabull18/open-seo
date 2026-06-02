@@ -38,7 +38,7 @@ In the Cloudflare dashboard:
 DataForSEO API responses are cached in R2 under the `dataforseo-cache/` prefix. This step is optional, but recommended to automatically clean up expired cache objects:
 
 ```bash
-npx wrangler r2 bucket lifecycle add open-seo dataforseo-cache-expiry dataforseo-cache/ --expire-days 7
+pnpm dlx wrangler r2 bucket lifecycle add open-seo dataforseo-cache-expiry dataforseo-cache/ --expire-days 7
 ```
 
 If you changed the R2 bucket name during deploy, replace `open-seo` with your bucket name.
