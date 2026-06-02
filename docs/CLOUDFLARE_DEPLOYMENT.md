@@ -10,7 +10,7 @@ This document records the current Cloudflare deployment state for the hosted Ope
 - Auth mode: hosted Better Auth
 - Allowed hosted user: `jeremy@ignitabull.com`
 - Compatibility date: `2026-05-28`
-- Worker version verified during deployment: `8877f7a6-fd6b-4efe-a6cc-2c857e25bc64`
+- Worker version: changes on each deploy; verify the current value with `wrangler deployments list` or the final `Current Version ID` line from `pnpm run deploy`.
 - Domain decision: keep the current `workers.dev` URL for this deployment. No custom domain is configured yet.
 - Preview URLs: disabled in `wrangler.jsonc`.
 
@@ -80,3 +80,5 @@ Completed:
 - Verified Jeremy can sign in with the password stored in 1Password.
 - Added and verified the R2 lifecycle rule `dataforseo-cache-expiry`, which expires `dataforseo-cache/` objects after 7 days.
 - Deployed the final hardening config using Wrangler with the authenticated `cf` CLI token context.
+
+Latest full verification: June 2, 2026.
