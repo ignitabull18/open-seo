@@ -35,6 +35,15 @@ jobs:
       - name: Run CI checks
         run: pnpm run ci:check
 
+      - name: Verify generated route trees
+        run: pnpm run verify:generated
+
+      - name: Verify Cloudflare bindings
+        run: pnpm run verify:bindings
+
+      - name: Verify release readiness
+        run: pnpm run release:verify
+
       - name: Run tests
         run: pnpm run test:ci
 
@@ -43,6 +52,9 @@ jobs:
 
       - name: Run website type checks
         run: pnpm --dir web run types:check
+
+      - name: Verify website Cloudflare typegen
+        run: pnpm --dir web run cf-typegen && git diff --exit-code -- web/worker-configuration.d.ts
 
       - name: Build website
         run: pnpm --dir web run build
