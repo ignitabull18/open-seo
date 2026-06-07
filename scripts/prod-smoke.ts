@@ -1,33 +1,10 @@
-import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import { latestDeployment } from "./lib/deployments";
+import { runRequired } from "./lib/command";
 
 const baseUrl =
   process.env.OPEN_SEO_PROD_URL ??
   "https://open-seo.lingering-rain-68b6.workers.dev";
-
-function run(command: string, args: string[]) {
-  const pnpmExecPath = process.env.npm_execpath;
-  const executable =
-    pnpmExecPath && command === "wrangler"
-      ? process.execPath
-      : process.platform === "win32"
-        ? `${command}.cmd`
-        : command;
-  const execArgs =
-    pnpmExecPath && command === "wrangler"
-      ? [pnpmExecPath, "exec", command, ...args]
-      : args;
-  const result = spawnSync(executable, execArgs, {
-    encoding: "utf8",
-  });
-
-  if (result.status !== 0) {
-    throw new Error(
-      `${command} ${args.join(" ")} failed\n${result.error?.message ?? ""}\n${result.stdout ?? ""}\n${result.stderr ?? ""}`,
-    );
-  }
-
-  return result.stdout;
-}
 
 async function expectStatus(
   path: string,
@@ -50,6 +27,29 @@ async function expectStatus(
 await expectStatus("/", 200);
 await expectStatus("/sign-up", 200);
 await expectStatus("/sign-in", 200);
+await expectStatus("/api/auth/session", (status) =>
+  [200, 401].includes(status),
+);
+
+const healthResponse = await fetch(new URL("/health", baseUrl));
+if (healthResponse.status !== 200) {
+  throw new Error(`/health returned ${healthResponse.status}`);
+}
+const health = (await healthResponse.json()) as {
+  ok?: boolean;
+  service?: string;
+  commitSha?: string;
+  bindings?: Record<string, boolean>;
+};
+if (!health.ok || health.service !== "open-seo") {
+  throw new Error(
+    `/health returned unexpected payload: ${JSON.stringify(health)}`,
+  );
+}
+for (const [binding, available] of Object.entries(health.bindings ?? {})) {
+  if (!available) throw new Error(`/health reports missing binding ${binding}`);
+}
+console.log(`200 /health commit=${health.commitSha ?? "unknown"}`);
 
 for (const path of ["/api/auth/sign-up/email", "/api/auth/sign-in/email"]) {
   await expectStatus(path, 403, {
@@ -62,7 +62,7 @@ for (const path of ["/api/auth/sign-up/email", "/api/auth/sign-in/email"]) {
   });
 }
 
-const secrets = run("wrangler", ["secret", "list"]);
+const secrets = runRequired("wrangler", ["secret", "list"]);
 for (const secret of ["BETTER_AUTH_SECRET", "DATAFORSEO_API_KEY"]) {
   if (!secrets.includes(secret)) {
     throw new Error(`Missing expected Worker secret: ${secret}`);
@@ -70,7 +70,7 @@ for (const secret of ["BETTER_AUTH_SECRET", "DATAFORSEO_API_KEY"]) {
 }
 console.log("Worker secrets include required production entries");
 
-const jeremyUser = run("wrangler", [
+const jeremyUser = runRequired("wrangler", [
   "d1",
   "execute",
   "DB",
@@ -83,5 +83,67 @@ if (!jeremyUser.includes("jeremy@ignitabull.com")) {
 }
 console.log("Production D1 contains the hosted Jeremy account");
 
-run("wrangler", ["deployments", "list", "--name", "open-seo"]);
+const migrations = runRequired("wrangler", [
+  "d1",
+  "migrations",
+  "list",
+  "DB",
+  "--remote",
+]);
+if (!migrations.includes("0014_tag_color.sql")) {
+  throw new Error("Remote D1 migration list does not include latest migration");
+}
+console.log("Remote D1 migrations include latest migration");
+
+const lifecycle = runRequired("wrangler", [
+  "r2",
+  "bucket",
+  "lifecycle",
+  "list",
+  "open-seo",
+]);
+if (
+  !lifecycle.includes("dataforseo-cache-expiry") ||
+  !lifecycle.includes("dataforseo-cache/")
+) {
+  throw new Error("R2 lifecycle rule dataforseo-cache-expiry was not found");
+}
+console.log("R2 lifecycle rule dataforseo-cache-expiry is present");
+
+const wranglerConfig = readFileSync("wrangler.jsonc", "utf8");
+for (const marker of [
+  '"observability"',
+  '"enabled": true',
+  "site-audit-workflow",
+  "rank-check-workflow",
+]) {
+  if (!wranglerConfig.includes(marker)) {
+    throw new Error(`wrangler.jsonc missing operational marker ${marker}`);
+  }
+}
+console.log("Wrangler config includes observability and workflow bindings");
+
+const deploymentsOutput = runRequired("wrangler", [
+  "deployments",
+  "list",
+  "--name",
+  "open-seo",
+]);
+const latest = latestDeployment(deploymentsOutput);
+if (!latest) {
+  throw new Error("Could not parse latest deployment from Wrangler output");
+}
+if (existsSync("docs/deployment-state.json")) {
+  const state = JSON.parse(
+    readFileSync("docs/deployment-state.json", "utf8"),
+  ) as { workerVersionId?: string };
+  if (state.workerVersionId && state.workerVersionId !== latest.versionId) {
+    throw new Error(
+      `Deployment metadata version ${state.workerVersionId} does not match latest Worker deployment ${latest.versionId}`,
+    );
+  }
+}
+console.log(
+  `Latest deployment ${latest.versionId} created ${latest.createdAt}`,
+);
 console.log(`Production smoke checks passed for ${baseUrl}`);

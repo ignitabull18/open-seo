@@ -7,6 +7,7 @@ interface ViteTypeOptions {
 
 interface ImportMetaEnv {
   readonly VITE_SHOW_DEVTOOLS?: string;
+  readonly VITE_COMMIT_SHA?: string;
   // more env variables...
 }
 

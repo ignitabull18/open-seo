@@ -21,22 +21,23 @@ Run from the repository root:
 ```sh
 pnpm install
 pnpm --dir web install
-pnpm run ci:check
-pnpm run test:ci
-pnpm --dir web run types:check
-pnpm --dir web run build
-pnpm run release:verify
+pnpm run verify:all
 pnpm run deploy
 pnpm run smoke:prod
 pnpm run smoke:mcp
+pnpm run ci:status
 ```
 
 The production smoke command verifies:
 
 - the hosted app loads
+- `/health` reports app identity, commit SHA, auth mode, and binding availability
 - hosted sign-up and sign-in reject non-allowlisted emails
+- unauthenticated session behavior remains bounded
 - required Worker secrets are present
 - the Jeremy hosted user exists in remote D1
+- remote D1 migrations include the latest migration
+- the R2 cache lifecycle rule is present
 - Wrangler can read the production deployment list
 
 ## Monitoring
@@ -50,7 +51,9 @@ Check these surfaces after deploys and during incidents:
 - Workflow state: Cloudflare dashboard -> Workflows -> `site-audit-workflow` and `rank-check-workflow`.
 - KV namespaces: dashboard namespace views for OAuth and app state drift.
 - R2 cache storage: `pnpm run r2:cache -- info`.
+- R2 cache object listing: `CLOUDFLARE_API_TOKEN=... pnpm run r2:cache -- list`.
 - R2 known-key cleanup: `pnpm run r2:cache -- delete dataforseo-cache/<key>`.
+- Runbooks: `docs/OPERATION_RUNBOOKS.md`.
 
 ## Generated files
 

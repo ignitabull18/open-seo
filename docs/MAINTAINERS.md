@@ -82,6 +82,7 @@ Keep these docs aligned when project structure, commands, or deployment behavior
 - `docs/SELF_HOSTING_DOCKER.md`: Docker-specific setup and update flow.
 - `docs/SELF_HOSTING_CLOUDFLARE.md`: Cloudflare Deploy button flow, Access, MCP, and update guidance.
 - `docs/HOSTED_OPERATIONS.md`: hosted deploy, smoke, monitoring, generated-file, and R2 cache operations.
+- `docs/OPERATION_RUNBOOKS.md`: rollback, account recovery, credential rotation, alerts, and manual authenticated checks.
 - `docs/MCP_CLIENTS.md`: hosted and self-hosted MCP client setup commands.
 - `.opencode/command/*.md`: OpenCode slash commands.
 

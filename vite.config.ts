@@ -1,10 +1,21 @@
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { defineConfig, loadEnv } from "vite";
+import { spawnSync } from "node:child_process";
 import tsConfigPaths from "vite-tsconfig-paths";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { devtools } from "@tanstack/devtools-vite";
+
+function gitCommitSha() {
+  return (
+    process.env.VITE_COMMIT_SHA ??
+    spawnSync("git", ["rev-parse", "HEAD"], {
+      encoding: "utf8",
+    }).stdout.trim() ??
+    "unknown"
+  );
+}
 
 export default defineConfig(({ mode, isSsrBuild }) => {
   const env = loadEnv(mode, process.cwd(), "");
@@ -18,6 +29,9 @@ export default defineConfig(({ mode, isSsrBuild }) => {
 
   return {
     envPrefix: ["VITE_", "AUTH_MODE", "POSTHOG_PUBLIC_KEY", "POSTHOG_HOST"],
+    define: {
+      "import.meta.env.VITE_COMMIT_SHA": JSON.stringify(gitCommitSha()),
+    },
     server: {
       allowedHosts,
       port,
