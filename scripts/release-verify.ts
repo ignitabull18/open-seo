@@ -19,6 +19,14 @@ const result = verifyRelease({
   hasDockerfile: existsSync("Dockerfile.selfhost"),
   tagExists: tagCheck.status === 0,
   deployConfig: readFileSync("wrangler.jsonc", "utf8"),
+  deploymentState: existsSync("docs/deployment-state.json")
+    ? (JSON.parse(readFileSync("docs/deployment-state.json", "utf8")) as {
+        service?: string;
+        url?: string;
+        gitCommit?: string;
+        workerVersionId?: string;
+      })
+    : null,
 });
 
 for (const warning of result.warnings) console.warn(warning);

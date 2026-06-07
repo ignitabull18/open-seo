@@ -4,6 +4,12 @@ interface ReleaseVerificationInput {
   hasDockerfile: boolean;
   tagExists: boolean;
   deployConfig: string;
+  deploymentState?: {
+    service?: string;
+    url?: string;
+    gitCommit?: string;
+    workerVersionId?: string;
+  } | null;
 }
 
 export function verifyRelease(input: ReleaseVerificationInput) {
@@ -28,6 +34,20 @@ export function verifyRelease(input: ReleaseVerificationInput) {
       failures.push(
         `wrangler.jsonc is missing expected release marker: ${marker}`,
       );
+    }
+  }
+
+  if (!input.deploymentState) {
+    warnings.push("Missing deployment metadata: docs/deployment-state.json");
+  } else {
+    if (input.deploymentState.service !== "open-seo") {
+      failures.push("Deployment metadata service is not open-seo");
+    }
+    if (!input.deploymentState.workerVersionId) {
+      failures.push("Deployment metadata is missing workerVersionId");
+    }
+    if (!input.deploymentState.gitCommit) {
+      failures.push("Deployment metadata is missing gitCommit");
     }
   }
 

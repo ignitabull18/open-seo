@@ -1,5 +1,10 @@
 import { cloudflareApi, getCloudflareAccountId } from "./lib/cloudflare-api";
 import { runCommand } from "./lib/command";
+import {
+  formatR2Summary,
+  summarizeR2Objects,
+  type R2ObjectSummary,
+} from "./lib/r2-cache";
 
 const bucket = process.env.OPEN_SEO_R2_BUCKET ?? "open-seo";
 const prefix = process.env.OPEN_SEO_R2_PREFIX ?? "dataforseo-cache/";
@@ -18,15 +23,23 @@ if (command === "info") {
   wrangler(["r2", "bucket", "info", bucket]);
 } else if (command === "list") {
   const accountId = getCloudflareAccountId();
-  const params = new URLSearchParams({ prefix });
-  const objects = await cloudflareApi<
-    Array<{
-      key?: string;
-      size?: number;
-      last_modified?: string;
-      http_metadata?: { cacheExpiry?: string };
-    }>
-  >(`/accounts/${accountId}/r2/buckets/${bucket}/objects?${params}`);
+  let cursor: string | undefined;
+  const objects: R2ObjectSummary[] = [];
+  do {
+    const params = new URLSearchParams({ prefix, per_page: "100" });
+    if (cursor) params.set("cursor", cursor);
+    const page = await cloudflareApi<{
+      objects?: R2ObjectSummary[];
+      cursor?: string;
+      truncated?: boolean;
+    }>(`/accounts/${accountId}/r2/buckets/${bucket}/objects?${params}`);
+    objects.push(...(Array.isArray(page) ? page : (page.objects ?? [])));
+    cursor = Array.isArray(page) ? undefined : page.cursor;
+    if (!cursor && !Array.isArray(page) && page.truncated) {
+      throw new Error("R2 list response was truncated without a cursor");
+    }
+  } while (cursor);
+
   const now = Date.now();
   for (const object of objects) {
     const ageMs = object.last_modified
@@ -51,6 +64,7 @@ if (command === "info") {
     );
   }
   console.log(`Listed ${objects.length} object(s) under ${prefix}`);
+  console.log(formatR2Summary(summarizeR2Objects(objects, now)));
 } else if (command === "delete") {
   const key = process.argv[3];
   if (!key) {

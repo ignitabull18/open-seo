@@ -2,6 +2,14 @@ import { existsSync, readFileSync } from "node:fs";
 import { latestDeployment } from "./lib/deployments";
 import { runRequired } from "./lib/command";
 import { loadJsonc } from "./lib/jsonc";
+import { validateHealthPayload, type HealthPayload } from "./lib/health";
+import {
+  authSessionSmokePath,
+  latestLocalMigrationName,
+  remoteMigrationsAreCurrent,
+  workflowInstancesHealthy,
+  workflowListHasOpenSeoWorkflows,
+} from "./lib/prod-smoke";
 
 const baseUrl =
   process.env.OPEN_SEO_PROD_URL ??
@@ -38,7 +46,7 @@ async function expectStatus(
 await expectStatus("/", 200);
 await expectStatus("/sign-up", 200);
 await expectStatus("/sign-in", 200);
-await expectStatus("/api/auth/get-session", (status) =>
+await expectStatus(authSessionSmokePath, (status) =>
   [200, 401].includes(status),
 );
 
@@ -46,19 +54,13 @@ const healthResponse = await fetch(new URL("/health", baseUrl));
 if (healthResponse.status !== 200) {
   throw new Error(`/health returned ${healthResponse.status}`);
 }
-const health = (await healthResponse.json()) as {
-  ok?: boolean;
-  service?: string;
-  commitSha?: string;
-  bindings?: Record<string, boolean>;
-};
-if (!health.ok || health.service !== "open-seo") {
+const health = (await healthResponse.json()) as HealthPayload;
+const expectedCommitSha = process.env.OPEN_SEO_EXPECT_COMMIT_SHA;
+const healthFailures = validateHealthPayload(health, expectedCommitSha);
+if (healthFailures.length > 0) {
   throw new Error(
-    `/health returned unexpected payload: ${JSON.stringify(health)}`,
+    `/health returned unexpected payload: ${healthFailures.join("; ")}: ${JSON.stringify(health)}`,
   );
-}
-for (const [binding, available] of Object.entries(health.bindings ?? {})) {
-  if (!available) throw new Error(`/health reports missing binding ${binding}`);
 }
 console.log(`200 /health commit=${health.commitSha ?? "unknown"}`);
 
@@ -95,13 +97,11 @@ if (!jeremyUser.includes("jeremy@ignitabull.com")) {
 console.log("Production D1 contains the hosted Jeremy account");
 
 const migrations = wrangler(["d1", "migrations", "list", "DB", "--remote"]);
-if (
-  !migrations.includes("No migrations to apply") &&
-  !migrations.includes("0014_tag_color.sql")
-) {
+const latestMigration = latestLocalMigrationName();
+if (!remoteMigrationsAreCurrent(migrations, latestMigration)) {
   throw new Error("Remote D1 migrations are not up to date");
 }
-console.log("Remote D1 migrations are up to date");
+console.log(`Remote D1 migrations are up to date through ${latestMigration}`);
 
 const lifecycle = wrangler(["r2", "bucket", "lifecycle", "list", "open-seo"]);
 if (
@@ -124,6 +124,18 @@ for (const marker of [
   }
 }
 console.log("Wrangler config includes observability and workflow bindings");
+
+const workflows = wrangler(["workflows", "list"]);
+if (!workflowListHasOpenSeoWorkflows(workflows)) {
+  throw new Error("OpenSEO workflows were not found in Wrangler workflow list");
+}
+for (const workflowName of ["site-audit-workflow", "rank-check-workflow"]) {
+  const instances = wrangler(["workflows", "instances", "list", workflowName]);
+  if (!workflowInstancesHealthy(instances)) {
+    throw new Error(`Workflow ${workflowName} has failed recent instances`);
+  }
+}
+console.log("OpenSEO workflows are listed and have no failed recent instances");
 
 const deploymentsOutput = wrangler([
   "deployments",

@@ -23,8 +23,7 @@ pnpm install
 pnpm --dir web install
 pnpm run verify:all
 pnpm run deploy
-pnpm run smoke:prod
-pnpm run smoke:mcp
+pnpm run smoke:all
 pnpm run ci:status
 ```
 
@@ -38,6 +37,7 @@ The production smoke command verifies:
 - the Jeremy hosted user exists in remote D1
 - remote D1 migrations include the latest migration
 - the R2 cache lifecycle rule is present
+- OpenSEO Workflows are present and have no failed recent instances
 - Wrangler can read the production deployment list
 
 ## Monitoring
@@ -52,6 +52,7 @@ Check these surfaces after deploys and during incidents:
 - KV namespaces: dashboard namespace views for OAuth and app state drift.
 - R2 cache storage: `pnpm run r2:cache -- info`.
 - R2 cache object listing: `CLOUDFLARE_API_TOKEN=... pnpm run r2:cache -- list`.
+- Marketing site smoke: `pnpm run smoke:web`.
 - R2 known-key cleanup: `pnpm run r2:cache -- delete dataforseo-cache/<key>`.
 - Runbooks: `docs/OPERATION_RUNBOOKS.md`.
 

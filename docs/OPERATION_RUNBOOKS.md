@@ -10,6 +10,15 @@ pnpm run ci:status
 
 If no rows are returned, the GitHub CLI token may not have Actions read access or GitHub may not have indexed the latest push yet. This is non-fatal for local deploy verification; rely on local `pnpm run verify:all` plus live smoke checks until Actions are visible.
 
+The local `gh` token must include `workflow` scope to push `.github/workflows/*.yml` changes directly:
+
+```sh
+gh auth refresh -h github.com -s workflow
+gh auth status -h github.com
+```
+
+If local OAuth refresh is unavailable, apply workflow-only changes through the GitHub connector and fast-forward the local checkout afterward.
+
 ## Authenticated Jeremy login smoke
 
 The automated `pnpm run smoke:prod` intentionally does not read or print Jeremy's password.
@@ -54,9 +63,17 @@ pnpm run deploy
 ```sh
 pnpm run smoke:prod
 pnpm run smoke:mcp
+pnpm run smoke:web
 ```
 
-5. Return to `main` after the incident branch is handled.
+5. Confirm `/health` reports the expected rollback commit:
+
+```sh
+$env:OPEN_SEO_EXPECT_COMMIT_SHA="<known-good-sha>"
+pnpm run smoke:prod
+```
+
+6. Return to `main` after the incident branch is handled.
 
 ## Better Auth account recovery
 
@@ -69,6 +86,18 @@ pnpm exec wrangler d1 execute DB --remote --command "select id,email,emailVerifi
 2. If password reset email is unavailable, rotate the hosted password through the app's reset flow after Loops email config is confirmed.
 3. Keep `HOSTED_ALLOWED_EMAILS=jeremy@ignitabull.com`.
 4. Do not create a second hosted admin account unless the allowlist and docs are updated in the same change.
+
+## Better Auth endpoint map
+
+Hosted mode mounts Better Auth under the TanStack splat route `src/routes/api/auth/$.ts`.
+
+Smoke-tested endpoints:
+
+- `GET /api/auth/get-session`: unauthenticated sessions return `200 null`.
+- `POST /api/auth/sign-up/email`: non-allowlisted emails return `403`.
+- `POST /api/auth/sign-in/email`: non-allowlisted emails return `403`.
+
+Do not use `/api/auth/session` for production smoke checks unless the Better Auth client route changes.
 
 ## DataForSEO credential rotation
 
@@ -89,6 +118,8 @@ pnpm exec wrangler secret put DATAFORSEO_API_KEY
 2. Use `pnpm run test:ci` for metering regression coverage.
 3. In hosted production, run a small paid DataForSEO action and confirm Autumn usage moves on the expected feature.
 4. Check PostHog for `usage:credits_consume` events with `provider=dataforseo`.
+5. Confirm webhook signing and product IDs in the Autumn dashboard before changing hosted plan gates.
+6. Re-run `pnpm run smoke:prod` after any billing configuration change.
 
 ## Alerts and monitoring
 
@@ -107,6 +138,22 @@ Minimum alert policy:
 - Triage on D1 migration failure.
 - Triage on DataForSEO credential or billing failures.
 
+Useful log commands:
+
+```sh
+pnpm exec wrangler tail open-seo
+pnpm exec wrangler tail open-seo --status error
+pnpm exec wrangler tail open-seo --format json
+```
+
+Workflow checks:
+
+```sh
+pnpm exec wrangler workflows list
+pnpm exec wrangler workflows instances list site-audit-workflow
+pnpm exec wrangler workflows instances list rank-check-workflow
+```
+
 ## Worker secret drift
 
 Production currently requires these Worker secrets:
@@ -115,6 +162,12 @@ Production currently requires these Worker secrets:
 - `DATAFORSEO_API_KEY`
 
 `pnpm run smoke:prod` verifies both without printing secret values.
+
+For a focused check, run:
+
+```sh
+pnpm run secrets:verify
+```
 
 ## Generated type file policy
 
@@ -139,12 +192,35 @@ The marketing/docs Worker should get a dedicated `smoke:web` command before the 
 - `/pricing`, `/features/mcp`, `/guides`, and `/guides/seo-for-startups` return 200.
 - `https://www.openseo.so/` redirects or serves as intended.
 
+Run:
+
+```sh
+pnpm run smoke:web
+```
+
+Use `pnpm run smoke:all` for product, MCP, and marketing checks together.
+
+## Deployment metadata policy
+
+`docs/deployment-state.json` is tracked on purpose. It records the latest production Worker version and the Git commit used to build that runtime. Because the file is written after `wrangler deploy`, the metadata commit can be newer than the runtime commit. Treat it as an operations ledger, not a runtime asset.
+
+If a later change affects runtime code, redeploy and commit a fresh metadata update.
+
+## PostHog sourcemaps
+
+When frontend bundle debugging matters, run:
+
+```sh
+POSTHOG_SOURCEMAPS=true pnpm run sourcemaps:upload
+```
+
+Then confirm the PostHog project receives sourcemaps for the current production release. Do not print PostHog keys in logs or docs.
+
 ## Verify everything
 
 Run:
 
 ```sh
 pnpm run verify:all
-pnpm run smoke:prod
-pnpm run smoke:mcp
+pnpm run smoke:all
 ```
