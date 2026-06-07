@@ -5,6 +5,36 @@ export interface R2ObjectSummary {
   http_metadata?: { cacheExpiry?: string };
 }
 
+interface R2ListPage {
+  objects: R2ObjectSummary[];
+  cursor?: string;
+  truncated: boolean;
+}
+
+export function normalizeR2ListPage(page: unknown): R2ListPage {
+  if (Array.isArray(page)) {
+    return { objects: page as R2ObjectSummary[], truncated: false };
+  }
+
+  if (!page || typeof page !== "object") {
+    throw new Error("R2 list response was not an object or array");
+  }
+
+  const record = page as {
+    objects?: unknown;
+    cursor?: unknown;
+    truncated?: unknown;
+  };
+
+  return {
+    objects: Array.isArray(record.objects)
+      ? (record.objects as R2ObjectSummary[])
+      : [],
+    cursor: typeof record.cursor === "string" ? record.cursor : undefined,
+    truncated: record.truncated === true,
+  };
+}
+
 export function summarizeR2Objects(
   objects: R2ObjectSummary[],
   now = Date.now(),

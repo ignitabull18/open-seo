@@ -110,6 +110,7 @@ pnpm run verify:generated
 pnpm run verify:bindings
 pnpm run release:verify
 pnpm run smoke:all
+pnpm run billing:verify
 ```
 
 Use `pnpm run ci:check` for the same static checks CI runs on the root app. If the change touches `web/`, also run `pnpm --dir web run types:check`, `pnpm --dir web run build`, and `pnpm --dir web run cf-typegen` when web Worker bindings change.

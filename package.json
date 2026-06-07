@@ -34,6 +34,8 @@
     "smoke:all": "pnpm run smoke:prod && pnpm run smoke:mcp && pnpm run smoke:web",
     "r2:cache": "tsx scripts/r2-cache-inspect.ts",
     "secrets:verify": "tsx scripts/verify-worker-secrets.ts",
+    "dataforseo:smoke": "tsx scripts/dataforseo-credential-smoke.ts",
+    "billing:verify": "tsx scripts/billing-config-verify.ts",
     "pricing:refresh": "tsx scripts/dataforseo-pricing-refresh.ts",
     "release:notes": "node scripts/release-notes.mjs",
     "release:verify": "tsx scripts/release-verify.ts",

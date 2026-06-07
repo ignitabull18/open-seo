@@ -3,6 +3,7 @@ import {
   latestDeployment,
   parseWranglerDeployVersion,
   parseWranglerDeploymentsList,
+  parseWranglerVersionsList,
 } from "./deployments";
 
 describe("deployment parsing", () => {
@@ -28,5 +29,28 @@ Version(s):  (100%) cc3fc2ff-7aa1-467f-aac0-6bbb3cf88211
       createdAt: "2026-06-07T02:28:39.508Z",
       versionId: "cc3fc2ff-7aa1-467f-aac0-6bbb3cf88211",
     });
+  });
+
+  it("parses versions list output", () => {
+    const output = `
+Created:  2026-06-07T05:16:19.253Z
+Tag:      latest
+ID:       c40f1f9c-21f6-43b7-a820-9c6cfac5fb40
+
+Created:  2026-06-07T04:43:20.184Z
+ID:       e5b066f7-a819-401b-8022-a14309fedaaa
+`;
+
+    expect(parseWranglerVersionsList(output)).toEqual([
+      {
+        createdAt: "2026-06-07T05:16:19.253Z",
+        versionId: "c40f1f9c-21f6-43b7-a820-9c6cfac5fb40",
+        tag: "latest",
+      },
+      {
+        createdAt: "2026-06-07T04:43:20.184Z",
+        versionId: "e5b066f7-a819-401b-8022-a14309fedaaa",
+      },
+    ]);
   });
 });

@@ -2,6 +2,7 @@ import { cloudflareApi, getCloudflareAccountId } from "./lib/cloudflare-api";
 import { runCommand } from "./lib/command";
 import {
   formatR2Summary,
+  normalizeR2ListPage,
   summarizeR2Objects,
   type R2ObjectSummary,
 } from "./lib/r2-cache";
@@ -33,9 +34,10 @@ if (command === "info") {
       cursor?: string;
       truncated?: boolean;
     }>(`/accounts/${accountId}/r2/buckets/${bucket}/objects?${params}`);
-    objects.push(...(Array.isArray(page) ? page : (page.objects ?? [])));
-    cursor = Array.isArray(page) ? undefined : page.cursor;
-    if (!cursor && !Array.isArray(page) && page.truncated) {
+    const normalized = normalizeR2ListPage(page);
+    objects.push(...normalized.objects);
+    cursor = normalized.cursor;
+    if (!cursor && normalized.truncated) {
       throw new Error("R2 list response was truncated without a cursor");
     }
   } while (cursor);

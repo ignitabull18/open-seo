@@ -109,17 +109,23 @@ Do not use `/api/auth/session` for production smoke checks unless the Better Aut
 pnpm exec wrangler secret put DATAFORSEO_API_KEY
 ```
 
-4. Verify account access through the DataForSEO account-state endpoint or an app workflow.
+4. Verify account access through the zero-cost DataForSEO status endpoint:
+
+```sh
+pnpm run dataforseo:smoke
+```
+
 5. Run `pnpm run smoke:prod`.
 
 ## Autumn billing validation
 
 1. Confirm `AUTUMN_SECRET_KEY` is available in the operator environment before local billing tests that require it.
-2. Use `pnpm run test:ci` for metering regression coverage.
-3. In hosted production, run a small paid DataForSEO action and confirm Autumn usage moves on the expected feature.
-4. Check PostHog for `usage:credits_consume` events with `provider=dataforseo`.
-5. Confirm webhook signing and product IDs in the Autumn dashboard before changing hosted plan gates.
-6. Re-run `pnpm run smoke:prod` after any billing configuration change.
+2. Run `pnpm run billing:verify` for static Autumn wiring coverage.
+3. Use `pnpm run test:ci` for metering regression coverage.
+4. In hosted production, run a small paid DataForSEO action and confirm Autumn usage moves on the expected feature.
+5. Check PostHog for `usage:credits_consume` events with `provider=dataforseo`.
+6. Confirm webhook signing and product IDs in the Autumn dashboard before changing hosted plan gates.
+7. Re-run `pnpm run smoke:prod` after any billing configuration change.
 
 ## Alerts and monitoring
 
