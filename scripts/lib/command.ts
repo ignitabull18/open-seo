@@ -20,10 +20,13 @@ export function buildCommand(
   const platform = options.platform ?? process.platform;
   const execPath = options.execPath ?? process.execPath;
 
-  if (env.npm_execpath && ["wrangler", "gh"].includes(command)) {
+  if (env.npm_execpath && ["gh", "pnpm", "wrangler"].includes(command)) {
     return {
       executable: execPath,
-      args: [env.npm_execpath, "exec", command, ...args],
+      args:
+        command === "pnpm"
+          ? [env.npm_execpath, ...args]
+          : [env.npm_execpath, "exec", command, ...args],
     };
   }
 
@@ -48,6 +51,7 @@ export function runCommand(
   return spawnSync(built.executable, built.args, {
     encoding: "utf8",
     env: options.env as NodeJS.ProcessEnv | undefined,
+    shell: process.platform === "win32" && built.executable.endsWith(".cmd"),
     stdio: options.stdio ?? "pipe",
   });
 }

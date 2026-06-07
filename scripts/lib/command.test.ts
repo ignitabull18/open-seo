@@ -15,6 +15,19 @@ describe("buildCommand", () => {
     });
   });
 
+  it("uses the current pnpm entrypoint for pnpm inside pnpm scripts", () => {
+    expect(
+      buildCommand("pnpm", ["run", "build"], {
+        env: { npm_execpath: "C:/pnpm.cjs" },
+        execPath: "node.exe",
+        platform: "win32",
+      }),
+    ).toEqual({
+      executable: "node.exe",
+      args: ["C:/pnpm.cjs", "run", "build"],
+    });
+  });
+
   it("uses cmd shims on Windows outside pnpm scripts", () => {
     expect(
       buildCommand("wrangler", ["deploy"], {
