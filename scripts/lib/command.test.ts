@@ -38,4 +38,16 @@ describe("buildCommand", () => {
       args: ["rev-parse", "HEAD"],
     });
   });
+
+  it("does not add a cmd suffix to git on Windows", () => {
+    expect(
+      buildCommand("git", ["rev-parse", "HEAD"], {
+        env: {},
+        platform: "win32",
+      }),
+    ).toMatchObject({
+      executable: "git",
+      args: ["rev-parse", "HEAD"],
+    });
+  });
 });

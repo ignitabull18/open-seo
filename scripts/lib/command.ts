@@ -5,6 +5,8 @@ interface BuiltCommand {
   args: string[];
 }
 
+const windowsShimCommands = new Set(["gh", "pnpm", "wrangler"]);
+
 export function buildCommand(
   command: string,
   args: string[],
@@ -26,7 +28,10 @@ export function buildCommand(
   }
 
   return {
-    executable: platform === "win32" ? `${command}.cmd` : command,
+    executable:
+      platform === "win32" && windowsShimCommands.has(command)
+        ? `${command}.cmd`
+        : command,
     args,
   };
 }
