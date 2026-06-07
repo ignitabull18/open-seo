@@ -19,6 +19,14 @@ Generate notes from commits since the latest semver tag:
 pnpm run release:notes
 ```
 
+Before publishing, run the release verification gate:
+
+```sh
+pnpm run release:verify
+```
+
+It checks that the current package version has a matching release note file, that the self-host Dockerfile still exists, and that the Wrangler production config still carries the expected hosted deployment markers.
+
 Useful variants:
 
 ```sh
@@ -48,6 +56,7 @@ Recommended release flow:
 ```sh
 pnpm -s release:notes
 # edit and save the final copy in release-notes/v<version>.md
+pnpm run release:verify
 gh release create v<version> --target main --title v<version> --notes-file release-notes/v<version>.md
 ```
 
@@ -72,6 +81,8 @@ Keep these docs aligned when project structure, commands, or deployment behavior
 - `docs/PROJECT_STRUCTURE.md`: repository map and ownership boundaries.
 - `docs/SELF_HOSTING_DOCKER.md`: Docker-specific setup and update flow.
 - `docs/SELF_HOSTING_CLOUDFLARE.md`: Cloudflare Deploy button flow, Access, MCP, and update guidance.
+- `docs/HOSTED_OPERATIONS.md`: hosted deploy, smoke, monitoring, generated-file, and R2 cache operations.
+- `docs/MCP_CLIENTS.md`: hosted and self-hosted MCP client setup commands.
 - `.opencode/command/*.md`: OpenCode slash commands.
 
-When updating DataForSEO cost guidance, verify current public pricing first and include the date of the check in the README.
+When updating DataForSEO cost guidance, run `pnpm run pricing:refresh`, verify current public pricing first, and include the date of the check in the README.

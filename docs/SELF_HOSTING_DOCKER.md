@@ -4,6 +4,8 @@ Run OpenSEO locally with Docker.
 
 In Docker mode, OpenSEO uses `AUTH_MODE=local_noauth` (no auth checks, local admin user `admin@localhost`). Only expose it behind your own auth-protected reverse proxy, tunnel, or private network.
 
+Docker self-hosting is not safe to expose directly to the public internet. A supported secure Docker deployment must sit behind Cloudflare Tunnel + Cloudflare Access, an identity-aware reverse proxy, a VPN, or a private network boundary. See `adr/0005-docker-auth-boundary.md` for the decision record.
+
 The default `compose.yaml` uses the published GHCR image:
 
 - `ghcr.io/every-app/open-seo:latest`
@@ -37,6 +39,18 @@ ALLOWED_HOST=yourdomain.com docker compose up -d
 ```
 
 You can also persist it in `.env`.
+
+## Secure exposure pattern
+
+Recommended public exposure:
+
+1. Keep `AUTH_MODE=local_noauth` inside Docker.
+2. Terminate HTTPS and authentication before traffic reaches the container.
+3. Restrict the upstream to authenticated users only.
+4. Set `ALLOWED_HOST` to the external hostname.
+5. Confirm unauthenticated browser requests are denied by the proxy before they reach OpenSEO.
+
+Do not rely on Docker OpenSEO itself to challenge public users for credentials.
 
 ## Pin to a specific image tag
 

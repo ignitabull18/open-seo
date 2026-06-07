@@ -24,14 +24,21 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:prod": "wrangler d1 migrations apply DB --remote",
     "knip": "knip",
+    "verify:generated": "node scripts/verify-generated.mjs",
+    "verify:bindings": "node scripts/verify-bindings.mjs",
+    "smoke:prod": "tsx scripts/prod-smoke.ts",
+    "smoke:mcp": "tsx scripts/mcp-smoke.ts",
+    "r2:cache": "tsx scripts/r2-cache-inspect.ts",
+    "pricing:refresh": "tsx scripts/dataforseo-pricing-refresh.ts",
     "release:notes": "node scripts/release-notes.mjs",
+    "release:verify": "tsx scripts/release-verify.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ci": "vitest run --reporter=dot",
     "billing:backlinks": "tsx scripts/backlinks-cost-profile.ts",
     "billing:brand-lookup": "tsx scripts/brand-lookup-cost-profile.ts",
     "seed:rank-tracking": "tsx scripts/seed-rank-tracking.ts",
-    "ci:check": "prettier --check . && knip && tsc --noEmit && oxlint . --type-aware"
+    "ci:check": "prettier --check . && knip && tsc --noEmit && oxlint . --type-aware && pnpm run verify:generated && pnpm run verify:bindings"
   },
   "cloudflare": {
     "bindings": {

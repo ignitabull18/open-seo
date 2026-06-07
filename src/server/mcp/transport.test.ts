@@ -49,6 +49,11 @@ vi.mock("agents/mcp", () => ({
 const ctx: ExecutionContext = {
   waitUntil() {},
   passThroughOnException() {},
+  exports: {
+    default: undefined!,
+    RankCheckWorkflow: undefined!,
+    SiteAuditWorkflow: undefined!,
+  },
   props: {},
 };
 

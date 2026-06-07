@@ -11,7 +11,7 @@ This document records the current Cloudflare deployment state for the hosted Ope
 - Allowed hosted user: `jeremy@ignitabull.com`
 - Compatibility date: `2026-05-28`
 - Worker version: changes on each deploy; verify the current value with `wrangler deployments list` or the final `Current Version ID` line from `pnpm run deploy`.
-- Domain decision: keep the current `workers.dev` URL for this deployment. No custom domain is configured yet.
+- Domain decision: keep the current `workers.dev` URL for this deployment. See `adr/0004-hosted-custom-domain.md`.
 - Preview URLs: disabled in `wrangler.jsonc`.
 
 The deployed Worker uses Cloudflare storage primitives:
@@ -81,4 +81,6 @@ Completed:
 - Added and verified the R2 lifecycle rule `dataforseo-cache-expiry`, which expires `dataforseo-cache/` objects after 7 days.
 - Deployed the final hardening config using Wrangler with the authenticated `cf` CLI token context.
 
-Latest full verification: June 2, 2026.
+Automated verification entrypoints now live in `docs/HOSTED_OPERATIONS.md`.
+
+Latest full verification: June 7, 2026.

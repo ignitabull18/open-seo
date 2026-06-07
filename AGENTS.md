@@ -106,9 +106,11 @@ pnpm run format:check
 pnpm run types:check
 pnpm run lint
 pnpm run test:ci
+pnpm run verify:generated
+pnpm run verify:bindings
 ```
 
-Use `pnpm run ci:check` for the same static checks CI runs on the root app. If the change touches `web/`, also run `pnpm --dir web run types:check` and `pnpm --dir web run build`.
+Use `pnpm run ci:check` for the same static checks CI runs on the root app. If the change touches `web/`, also run `pnpm --dir web run types:check`, `pnpm --dir web run build`, and `pnpm --dir web run cf-typegen` when web Worker bindings change.
 
 ## Release Notes
 
@@ -118,4 +120,4 @@ The current version is stored in `package.json`. Generate release note drafts wi
 pnpm run release:notes
 ```
 
-Final notes belong in `release-notes/v<version>.md`. Maintainer details are in `docs/MAINTAINERS.md`.
+Final notes belong in `release-notes/v<version>.md`. Verify release readiness with `pnpm run release:verify`. Maintainer details are in `docs/MAINTAINERS.md`.

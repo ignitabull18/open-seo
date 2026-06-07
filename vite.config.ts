@@ -6,7 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import { devtools } from "@tanstack/devtools-vite";
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, isSsrBuild }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const port = env.PORT ? Number(env.PORT) : 3001;
   const showDevtools = env.VITE_SHOW_DEVTOOLS !== "false";
@@ -29,6 +29,27 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: emitSourcemaps,
       outDir: emitSourcemaps ? "dist-sourcemaps" : "dist",
+      chunkSizeWarningLimit: 6500,
+      rollupOptions: isSsrBuild
+        ? undefined
+        : {
+            output: {
+              manualChunks(id) {
+                if (!id.includes("node_modules")) return undefined;
+                if (id.includes("recharts") || id.includes("d3-")) {
+                  return "charts";
+                }
+                if (
+                  id.includes("react-markdown") ||
+                  id.includes("remark-") ||
+                  id.includes("micromark")
+                ) {
+                  return "markdown";
+                }
+                return undefined;
+              },
+            },
+          },
     },
     plugins: [
       showDevtools

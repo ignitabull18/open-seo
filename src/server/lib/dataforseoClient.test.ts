@@ -226,6 +226,18 @@ describe("meterDataforseoCall with split balances", () => {
     ).rejects.toMatchObject({ code: "INSUFFICIENT_CREDITS" });
 
     expect(trackMock).not.toHaveBeenCalled();
+    expect(fetchBacklinksSummaryRaw).not.toHaveBeenCalled();
+  });
+
+  it("creates the Autumn customer from the hosted billing context", async () => {
+    setupHostedMode();
+    mockBalances(5000, 3000);
+    mockDataforseoResult(0.05);
+
+    const client = createDataforseoClient(billingCustomer);
+    await client.backlinks.summary(backlinksInput);
+
+    expect(getOrCreateMock).toHaveBeenCalledWith(billingCustomer);
   });
 
   it("includes balanceFeatureId in track properties", async () => {

@@ -182,14 +182,24 @@ function AiPage() {
           <ul className="mt-4 space-y-3">
             {[
               {
-                title: "In-app SEO Research Agent",
+                title: "AI visibility audit",
                 description:
-                  "Ask questions and run research without leaving OpenSEO",
+                  "Track where models mention the brand, which competitors appear, and which cited pages influence those answers.",
               },
               {
-                title: "Content Assistant",
+                title: "GEO opportunity planner",
                 description:
-                  "Generate drafts using saved keywords and business context",
+                  "Turn prompt and citation gaps into recommended pages, schema updates, source outreach, and measurement tasks.",
+              },
+              {
+                title: "In-app SEO research agent",
+                description:
+                  "Ask questions and run research without leaving OpenSEO.",
+              },
+              {
+                title: "Content assistant",
+                description:
+                  "Generate drafts using saved keywords, prompt gaps, citations, and business context.",
               },
             ].map((item) => (
               <li key={item.title} className="flex gap-2.5 text-sm">

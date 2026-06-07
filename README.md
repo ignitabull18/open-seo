@@ -275,7 +275,7 @@ If you want to contribute but are unsure where to start, open an issue and descr
 
 Use this section to estimate DataForSEO spend per request type. OpenSEO itself remains free; these are API usage costs only.
 
-As of May 27, 2026, DataForSEO’s public docs/pricing pages say:
+As of June 7, 2026, DataForSEO’s public docs/pricing pages say:
 
 - New accounts include **$1 free credit** to test the API.
 - The minimum top-up/payment is **$50**.
@@ -324,7 +324,7 @@ Searching ten pages deep costs 8x more than one page. Tracking both devices cost
 ### 5) Backlinks search
 
 > [!NOTE]
-> There is a 2 week free trial, but then DataForSEO requires a $100/month commitment for this API. You can access this data for just $10/month through [openseo.so](https://openseo.so). Soon, we'll let you use an OpenSEO API key so that you can call our API from your self hosted instance.
+> There is a 2 week free trial, but then DataForSEO requires a $100/month commitment for this API. Hosted OpenSEO includes managed Backlinks access through [openseo.so](https://openseo.so). Self-hosted OpenSEO uses your own `DATAFORSEO_API_KEY`; see `adr/0003-self-hosted-open-seo-api-keys.md` for the hosted API-key decision.
 
 - Backlinks search costs about `$0.06` for a domain or `$0.04` for a page.
 - Opening extra tabs like `Referring Domains` or `Top Pages` adds about `+$0.02` each.

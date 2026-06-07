@@ -10,6 +10,9 @@ export default defineConfig({
   server: {
     port: 4322,
   },
+  build: {
+    chunkSizeWarningLimit: 700,
+  },
   ssr: {
     resolve: {
       conditions: ["worker", "import", "module", "default"],
