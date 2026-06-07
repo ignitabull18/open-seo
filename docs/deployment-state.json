@@ -1,7 +1,7 @@
 {
   "service": "open-seo",
   "url": "https://open-seo.lingering-rain-68b6.workers.dev",
-  "gitCommit": "d78f1174c7a499433fc0a1dda9ac37742a2d67e6",
-  "workerVersionId": "c40f1f9c-21f6-43b7-a820-9c6cfac5fb40",
-  "deployedAt": "2026-06-07T05:16:19.253Z"
+  "gitCommit": "3948bfa0486752774bb745f1b51855af279235c2",
+  "workerVersionId": "14069f33-7ce5-40cf-8402-4d40e1ea4052",
+  "deployedAt": "2026-06-07T05:38:11.971Z"
 }
