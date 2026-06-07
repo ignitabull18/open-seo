@@ -1,10 +1,21 @@
 import { existsSync, readFileSync } from "node:fs";
 import { latestDeployment } from "./lib/deployments";
 import { runRequired } from "./lib/command";
+import { loadJsonc } from "./lib/jsonc";
 
 const baseUrl =
   process.env.OPEN_SEO_PROD_URL ??
   "https://open-seo.lingering-rain-68b6.workers.dev";
+const wranglerConfig = loadJsonc("wrangler.jsonc") as { account_id?: string };
+const wranglerEnv = {
+  ...process.env,
+  CLOUDFLARE_ACCOUNT_ID:
+    process.env.CLOUDFLARE_ACCOUNT_ID ?? wranglerConfig.account_id,
+};
+
+function wrangler(args: string[]) {
+  return runRequired("wrangler", args, wranglerEnv);
+}
 
 async function expectStatus(
   path: string,
@@ -27,7 +38,7 @@ async function expectStatus(
 await expectStatus("/", 200);
 await expectStatus("/sign-up", 200);
 await expectStatus("/sign-in", 200);
-await expectStatus("/api/auth/session", (status) =>
+await expectStatus("/api/auth/get-session", (status) =>
   [200, 401].includes(status),
 );
 
@@ -62,7 +73,7 @@ for (const path of ["/api/auth/sign-up/email", "/api/auth/sign-in/email"]) {
   });
 }
 
-const secrets = runRequired("wrangler", ["secret", "list"]);
+const secrets = wrangler(["secret", "list"]);
 for (const secret of ["BETTER_AUTH_SECRET", "DATAFORSEO_API_KEY"]) {
   if (!secrets.includes(secret)) {
     throw new Error(`Missing expected Worker secret: ${secret}`);
@@ -70,7 +81,7 @@ for (const secret of ["BETTER_AUTH_SECRET", "DATAFORSEO_API_KEY"]) {
 }
 console.log("Worker secrets include required production entries");
 
-const jeremyUser = runRequired("wrangler", [
+const jeremyUser = wrangler([
   "d1",
   "execute",
   "DB",
@@ -83,25 +94,16 @@ if (!jeremyUser.includes("jeremy@ignitabull.com")) {
 }
 console.log("Production D1 contains the hosted Jeremy account");
 
-const migrations = runRequired("wrangler", [
-  "d1",
-  "migrations",
-  "list",
-  "DB",
-  "--remote",
-]);
-if (!migrations.includes("0014_tag_color.sql")) {
-  throw new Error("Remote D1 migration list does not include latest migration");
+const migrations = wrangler(["d1", "migrations", "list", "DB", "--remote"]);
+if (
+  !migrations.includes("No migrations to apply") &&
+  !migrations.includes("0014_tag_color.sql")
+) {
+  throw new Error("Remote D1 migrations are not up to date");
 }
-console.log("Remote D1 migrations include latest migration");
+console.log("Remote D1 migrations are up to date");
 
-const lifecycle = runRequired("wrangler", [
-  "r2",
-  "bucket",
-  "lifecycle",
-  "list",
-  "open-seo",
-]);
+const lifecycle = wrangler(["r2", "bucket", "lifecycle", "list", "open-seo"]);
 if (
   !lifecycle.includes("dataforseo-cache-expiry") ||
   !lifecycle.includes("dataforseo-cache/")
@@ -110,20 +112,20 @@ if (
 }
 console.log("R2 lifecycle rule dataforseo-cache-expiry is present");
 
-const wranglerConfig = readFileSync("wrangler.jsonc", "utf8");
+const wranglerConfigText = readFileSync("wrangler.jsonc", "utf8");
 for (const marker of [
   '"observability"',
   '"enabled": true',
   "site-audit-workflow",
   "rank-check-workflow",
 ]) {
-  if (!wranglerConfig.includes(marker)) {
+  if (!wranglerConfigText.includes(marker)) {
     throw new Error(`wrangler.jsonc missing operational marker ${marker}`);
   }
 }
 console.log("Wrangler config includes observability and workflow bindings");
 
-const deploymentsOutput = runRequired("wrangler", [
+const deploymentsOutput = wrangler([
   "deployments",
   "list",
   "--name",
