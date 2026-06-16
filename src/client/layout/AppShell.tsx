@@ -1,21 +1,12 @@
 import * as React from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ChevronDown,
-  ChevronsUpDown,
-  CircleHelp,
-  CreditCard,
-  Menu,
-  Settings,
-  User,
-} from "lucide-react";
+import { CircleHelp, CreditCard, Menu, Settings, User } from "lucide-react";
 import {
   AppContent,
   MissingSeoSetupModal,
   SeoApiStatusBanners,
 } from "@/client/layout/AppShellParts";
-import { getProjectNavGroups } from "@/client/navigation/items";
 import { signOutAndRedirect, useSession } from "@/lib/auth-client";
 import { isHostedClientAuthMode } from "@/lib/auth-mode";
 import { BILLING_ROUTE } from "@/shared/billing";
@@ -110,27 +101,29 @@ export function AuthenticatedAppLayout({
   }, [projectId]);
 
   return (
-    <div className="flex h-[100dvh] flex-col bg-base-200">
-      <TopNav
-        drawerOpen={drawerOpen}
-        projectId={headerProjectId}
-        pathname={location.pathname}
-        onOpenDrawer={() => setDrawerOpen(true)}
-      />
-
-      <SeoApiStatusBanners
-        shouldShowSeoApiWarning={shouldShowSeoApiWarning}
-        seoApiKeyStatusError={seoApiKeyStatusError}
-      />
-
-      {banner}
-
+    <div className="flex h-[100dvh] bg-base-200">
       <AppContent
         drawerOpen={drawerOpen}
         projectId={headerProjectId}
         onCloseDrawer={() => setDrawerOpen(false)}
       >
-        {children}
+        <div className="flex h-full min-w-0 flex-1 flex-col">
+          <TopBar
+            drawerOpen={drawerOpen}
+            projectId={headerProjectId}
+            pathname={location.pathname}
+            onOpenDrawer={() => setDrawerOpen(true)}
+          />
+
+          <SeoApiStatusBanners
+            shouldShowSeoApiWarning={shouldShowSeoApiWarning}
+            seoApiKeyStatusError={seoApiKeyStatusError}
+          />
+
+          {banner}
+
+          <div className="min-h-0 flex-1 overflow-auto">{children}</div>
+        </div>
       </AppContent>
 
       <MissingSeoSetupModal
@@ -142,7 +135,7 @@ export function AuthenticatedAppLayout({
   );
 }
 
-function TopNav({
+function TopBar({
   drawerOpen,
   projectId,
   pathname,
@@ -153,11 +146,10 @@ function TopNav({
   pathname: string;
   onOpenDrawer: () => void;
 }) {
-  const navGroups = projectId ? getProjectNavGroups(projectId) : [];
   const isSupportActive = pathname === SUPPORT_PATH;
 
   return (
-    <div className="navbar shrink-0 gap-2 border-b border-base-300 bg-base-100">
+    <div className="navbar shrink-0 gap-2 border-b border-base-300 bg-base-100 md:min-h-14">
       <div className="flex flex-none items-center md:hidden">
         {projectId ? (
           <button
@@ -175,86 +167,10 @@ function TopNav({
         </Link>
       </div>
 
-      <div className="hidden items-center gap-1 md:flex">
-        <Link to="/" className="px-2 text-lg font-semibold text-base-content">
-          OpenSEO
-        </Link>
-        {projectId
-          ? navGroups.map((entry) => {
-              if (entry.type === "standalone") {
-                const { icon: Icon, matchSegment, ...linkProps } = entry.item;
-                const isActive = pathname.includes(matchSegment);
-                return (
-                  <Link
-                    key={linkProps.to}
-                    {...linkProps}
-                    className={`btn btn-sm gap-2 ${
-                      isActive
-                        ? "border-transparent bg-primary/10 font-medium text-primary"
-                        : "btn-ghost text-base-content/60 hover:text-base-content"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {entry.item.label}
-                  </Link>
-                );
-              }
-
-              const GroupIcon = entry.icon;
-              const isGroupActive = entry.matchSegments.some((seg) =>
-                pathname.includes(seg),
-              );
-
-              return (
-                <div key={entry.label} className="dropdown dropdown-hover">
-                  <button
-                    type="button"
-                    tabIndex={0}
-                    className={`btn btn-sm gap-1.5 ${
-                      isGroupActive
-                        ? "border-transparent bg-primary/10 font-medium text-primary"
-                        : "btn-ghost text-base-content/60 hover:text-base-content"
-                    }`}
-                  >
-                    <GroupIcon className="h-4 w-4" />
-                    {entry.label}
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </button>
-                  <ul
-                    tabIndex={0}
-                    className="dropdown-content z-20 menu w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
-                  >
-                    {entry.items.map((item) => {
-                      const { icon: Icon, matchSegment, ...linkProps } = item;
-                      const isActive = pathname.includes(matchSegment);
-                      return (
-                        <li key={linkProps.to}>
-                          <Link
-                            {...linkProps}
-                            className={
-                              isActive
-                                ? "bg-primary/10 font-medium text-primary"
-                                : ""
-                            }
-                            onClick={() => {
-                              if (
-                                document.activeElement instanceof HTMLElement
-                              ) {
-                                document.activeElement.blur();
-                              }
-                            }}
-                          >
-                            <Icon className="h-4 w-4" />
-                            {item.label}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              );
-            })
-          : null}
+      <div className="hidden min-w-0 items-center md:flex">
+        <span className="px-1 text-sm font-medium text-base-content/55">
+          Workspace
+        </span>
       </div>
 
       <div className="flex-1" />
@@ -273,25 +189,7 @@ function TopNav({
           </Link>
         </div>
 
-        <div className="flex items-center rounded-full border border-base-300 bg-base-100/70 px-1 py-1 shadow-sm">
-          <div
-            className="tooltip tooltip-left before:whitespace-nowrap"
-            data-tip="Multiple projects coming soon"
-          >
-            <button
-              type="button"
-              className="flex h-10 cursor-default items-center gap-2 rounded-full px-3 text-left transition-colors hover:bg-base-200/80"
-              aria-label="Current project"
-            >
-              <span className="max-w-28 truncate text-sm font-medium text-base-content">
-                Default
-              </span>
-              <ChevronsUpDown className="size-3.5 shrink-0 text-base-content/35" />
-            </button>
-          </div>
-
-          <AccountMenu />
-        </div>
+        <AccountMenu />
       </div>
 
       <AccountMenu mobileOnly />

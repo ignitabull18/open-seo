@@ -3,6 +3,7 @@ import { AppError } from "@/server/lib/errors";
 import type * as DataforseoBacklinksSupport from "@/server/lib/dataforseoBacklinksSupport";
 
 vi.mock("@/server/lib/runtime-env", () => ({
+  getOptionalEnvValue: vi.fn(async () => undefined),
   getRequiredEnvValue: vi.fn(async () => "test-api-key"),
 }));
 

@@ -70,7 +70,7 @@ function AppContent({
   children: React.ReactNode;
 }) {
   return (
-    <>
+    <div className="min-h-0 flex-1">
       <div className="flex-1 min-h-0 md:hidden">
         <div className="h-full overflow-auto">{children}</div>
 
@@ -93,10 +93,15 @@ function AppContent({
         ) : null}
       </div>
 
-      <div className="hidden md:block flex-1 min-h-0 overflow-auto">
-        {children}
+      <div className="hidden h-full min-h-0 md:flex">
+        {projectId ? (
+          <aside className="h-full shrink-0">
+            <Sidebar projectId={projectId} />
+          </aside>
+        ) : null}
+        <div className="min-w-0 flex-1">{children}</div>
       </div>
-    </>
+    </div>
   );
 }
 

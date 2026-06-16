@@ -22,6 +22,7 @@ import { Route as AuthenticatedSubscribeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedOauthConsentRouteImport } from './routes/_authenticated.oauth-consent'
 import { Route as AuthSignUpRouteImport } from './routes/_auth.sign-up'
 import { Route as AuthSignInRouteImport } from './routes/_auth.sign-in'
+import { Route as AppToolsRouteImport } from './routes/_app/tools'
 import { Route as AppSupportRouteImport } from './routes/_app/support'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppBillingRouteImport } from './routes/_app/billing'
@@ -105,6 +106,11 @@ const AuthSignInRoute = AuthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => AuthRoute,
+} as any)
+const AppToolsRoute = AppToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppSupportRoute = AppSupportRouteImport.update({
   id: '/support',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/billing': typeof AppBillingRoute
   '/settings': typeof AppSettingsRoute
   '/support': typeof AppSupportRoute
+  '/tools': typeof AppToolsRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/oauth-consent': typeof AuthenticatedOauthConsentRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/billing': typeof AppBillingRoute
   '/settings': typeof AppSettingsRoute
   '/support': typeof AppSupportRoute
+  '/tools': typeof AppToolsRoute
   '/sign-in': typeof AuthSignInRoute
   '/sign-up': typeof AuthSignUpRoute
   '/oauth-consent': typeof AuthenticatedOauthConsentRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/_app/billing': typeof AppBillingRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/support': typeof AppSupportRoute
+  '/_app/tools': typeof AppToolsRoute
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_auth/sign-up': typeof AuthSignUpRoute
   '/_authenticated/oauth-consent': typeof AuthenticatedOauthConsentRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/settings'
     | '/support'
+    | '/tools'
     | '/sign-in'
     | '/sign-up'
     | '/oauth-consent'
@@ -363,6 +373,7 @@ export interface FileRouteTypes {
     | '/billing'
     | '/settings'
     | '/support'
+    | '/tools'
     | '/sign-in'
     | '/sign-up'
     | '/oauth-consent'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/_app/billing'
     | '/_app/settings'
     | '/_app/support'
+    | '/_app/tools'
     | '/_auth/sign-in'
     | '/_auth/sign-up'
     | '/_authenticated/oauth-consent'
@@ -524,6 +536,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/sign-in'
       preLoaderRoute: typeof AuthSignInRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_app/tools': {
+      id: '/_app/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof AppToolsRouteImport
+      parentRoute: typeof AppRouteRoute
     }
     '/_app/support': {
       id: '/_app/support'
@@ -680,6 +699,7 @@ interface AppRouteRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppSupportRoute: typeof AppSupportRoute
+  AppToolsRoute: typeof AppToolsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppHelpDataforseoApiKeyRoute: typeof AppHelpDataforseoApiKeyRoute
 }
@@ -689,6 +709,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppBillingRoute: AppBillingRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppSupportRoute: AppSupportRoute,
+  AppToolsRoute: AppToolsRoute,
   AppIndexRoute: AppIndexRoute,
   AppHelpDataforseoApiKeyRoute: AppHelpDataforseoApiKeyRoute,
 }

@@ -7,7 +7,7 @@ import type {
   DataforseoApiCallCost,
   DataforseoApiResponse,
 } from "@/server/lib/dataforseoCost";
-import { getRequiredEnvValue } from "@/server/lib/runtime-env";
+import { postDataforseoJson } from "@/server/lib/dataforseoTransport";
 import {
   classifyBacklinksError,
   type BacklinksTaskResult,
@@ -20,8 +20,6 @@ import {
   responseSchema,
 } from "@/server/lib/dataforseoBacklinksSupport";
 export { normalizeBacklinksTarget } from "@/server/lib/dataforseoBacklinksTarget";
-
-const API_BASE = "https://api.dataforseo.com";
 
 export type BacklinksRequest = {
   target: string;
@@ -43,31 +41,8 @@ type DataforseoTaskResponse = {
   billing: DataforseoApiCallCost;
 };
 
-async function createAuthenticatedFetch() {
-  const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY");
-
-  return (url: RequestInfo, init?: RequestInit): Promise<Response> => {
-    const headers = new Headers(init?.headers);
-    headers.set("Authorization", `Basic ${apiKey}`);
-
-    return fetch(url, {
-      ...init,
-      headers,
-    });
-  };
-}
-
 async function postBacklinks(path: string, payload: unknown) {
-  const authenticatedFetch = await createAuthenticatedFetch();
-  const response = await authenticatedFetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const rawText = await response.text();
+  const { response, rawText } = await postDataforseoJson(path, payload);
   if (!response.ok) {
     const classifiedError = classifyBacklinksError(
       response.status,

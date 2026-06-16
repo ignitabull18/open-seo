@@ -1,8 +1,6 @@
 import { z } from "zod";
+import { requestDataforseo } from "@/server/lib/dataforseoTransport";
 import { AppError } from "@/server/lib/errors";
-import { getRequiredEnvValue } from "@/server/lib/runtime-env";
-
-const API_BASE = "https://api.dataforseo.com";
 
 const userDataResponseSchema = z
   .object({
@@ -51,10 +49,9 @@ export function hasActiveDataforseoSubscription(
 }
 
 export async function fetchDataforseoAccountState(): Promise<DataforseoAccountState | null> {
-  const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY");
-  const response = await fetch(`${API_BASE}/v3/appendix/user_data`, {
+  const response = await requestDataforseo({
+    path: "/v3/appendix/user_data",
     method: "GET",
-    headers: { Authorization: `Basic ${apiKey}` },
   });
 
   if (!response.ok) {

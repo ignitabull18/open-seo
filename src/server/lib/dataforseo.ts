@@ -11,6 +11,8 @@ import {
 import { env } from "cloudflare:workers";
 import { z } from "zod";
 import type { DataforseoApiResponse } from "@/server/lib/dataforseoCost";
+import { proxyDataforseoRequestWithComposio } from "@/server/lib/composioDataforseo";
+import { getSeoDataProviderName } from "@/server/lib/dataProvider";
 import { AppError } from "@/server/lib/errors";
 import {
   dataforseoResponseSchema,
@@ -45,6 +47,17 @@ export type {
 
 function createAuthenticatedFetch() {
   return async (url: RequestInfo, init?: RequestInit): Promise<Response> => {
+    if (getSeoDataProviderName(env) === "composio") {
+      const path = formatDataforseoRequestPath(url);
+      const data = await proxyDataforseoRequestWithComposio({
+        path,
+        method: init?.method === "GET" ? "GET" : "POST",
+        body: parseJsonBody(init?.body),
+      });
+
+      return Response.json(data);
+    }
+
     const headers = new Headers(init?.headers);
     headers.set("Authorization", `Basic ${env.DATAFORSEO_API_KEY}`);
 
@@ -77,6 +90,18 @@ function createAuthenticatedFetch() {
 
 const API_BASE = "https://api.dataforseo.com";
 const MAX_DATAFORSEO_ERROR_PAYLOAD_LENGTH = 1600;
+
+function parseJsonBody(body: BodyInit | null | undefined): unknown {
+  if (typeof body !== "string" || body.length === 0) {
+    return undefined;
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch {
+    return body;
+  }
+}
 
 function getLabsApi() {
   return new DataforseoLabsApi(API_BASE, { fetch: createAuthenticatedFetch() });
