@@ -35,7 +35,6 @@
     "r2:cache": "tsx scripts/r2-cache-inspect.ts",
     "secrets:verify": "tsx scripts/verify-worker-secrets.ts",
     "dataforseo:smoke": "tsx scripts/dataforseo-credential-smoke.ts",
-    "composio:dataforseo:smoke": "tsx scripts/composio-dataforseo-smoke.ts",
     "billing:verify": "tsx scripts/billing-config-verify.ts",
     "pricing:refresh": "tsx scripts/dataforseo-pricing-refresh.ts",
     "release:notes": "node scripts/release-notes.mjs",
@@ -62,17 +61,8 @@
       "DATAFORSEO_API_KEY": {
         "description": "Base64-encoded `login:password` for DataForSEO API access."
       },
-      "DATAFORSEO_PROVIDER": {
-        "description": "SEO data provider. Defaults to `dataforseo`; set to `composio` to route DataForSEO HTTP calls through Composio."
-      },
       "COMPOSIO_API_KEY": {
-        "description": "Composio project API key used when DATAFORSEO_PROVIDER=composio."
-      },
-      "COMPOSIO_DATAFORSEO_CONNECTED_ACCOUNT_ID": {
-        "description": "Optional Composio connected account ID for the DataForSEO toolkit. If omitted, OpenSEO uses DATAFORSEO_API_KEY as custom Basic auth for Composio proxy execution."
-      },
-      "COMPOSIO_DATAFORSEO_TOOLKIT_VERSION": {
-        "description": "Pinned Composio DataForSEO toolkit version. Defaults to 20260429_00."
+        "description": "Composio project API key used for connected external tools in the Tools and Settings surfaces."
       },
       "HOSTED_ALLOWED_EMAILS": {
         "description": "Comma-separated hosted auth signup/sign-in allowlist. This deployment is restricted to `jeremy@ignitabull.com`."

@@ -21,9 +21,7 @@ declare namespace Cloudflare {
 
     // DataForSEO API Basic auth value (base64 of login:password)
     DATAFORSEO_API_KEY: string;
-    DATAFORSEO_PROVIDER?: "dataforseo" | "composio";
-    COMPOSIO_DATAFORSEO_CONNECTED_ACCOUNT_ID?: string;
-    COMPOSIO_DATAFORSEO_TOOLKIT_VERSION?: string;
+    COMPOSIO_API_KEY?: string;
   }
 }
 

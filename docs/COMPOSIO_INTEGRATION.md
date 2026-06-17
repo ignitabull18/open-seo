@@ -1,60 +1,61 @@
-# Composio Integration Plan
+# Composio Integration
 
-OpenSEO can route DataForSEO requests through Composio while preserving the
-existing OpenSEO feature services, response parsing, and hosted billing meter.
+OpenSEO uses its built-in DataForSEO integration for SEO data. DataForSEO calls
+continue to use `DATAFORSEO_API_KEY` directly so the app keeps its existing
+schemas, billing metadata, and cost verification logic.
 
-## Current Shape
+Composio is used for connected external tools exposed in the Tools hub and the
+Settings integration section.
 
-- `DATAFORSEO_PROVIDER=dataforseo` is the default and keeps direct DataForSEO
-  Basic-auth requests.
-- `DATAFORSEO_PROVIDER=composio` routes the same raw DataForSEO HTTP requests
-  through Composio proxy execution.
-- The Composio DataForSEO toolkit is pinned to `20260429_00` by default because
-  OpenSEO parses provider responses programmatically.
-- If `COMPOSIO_DATAFORSEO_CONNECTED_ACCOUNT_ID` is set, OpenSEO uses that
-  Composio connected account. Otherwise it decodes the existing
-  `DATAFORSEO_API_KEY` into Basic auth credentials for Composio.
+## Toolkits
+
+OpenSEO provisions and displays Composio auth configs for:
+
+- Google Search Console
+- Google Analytics
+- Google Sheets
+- Gmail
+- Google Docs
+- Slack
+- Notion
+- WordPress
+- LinkedIn
+- HubSpot
+- GitHub
+- Jira
+
+The connected-tools catalog lives in
+`src/server/features/integrations/composioCatalog.ts`. The server functions in
+`src/serverFunctions/composio-integrations.ts` read the catalog, create auth
+configs when needed, and start Composio connection flows for users.
 
 ## Setup
 
 Production uses the account-level Cloudflare Secrets Store binding
-`COMPOSIO_API_KEY` from `default_secrets_store`. Local development and the smoke
-script still need credentials from `.env.local`, `.env`, or the process
-environment:
+`COMPOSIO_API_KEY` from `default_secrets_store`. Local development can provide
+the same key from `.env.local`, `.env`, or the process environment:
 
 ```sh
-DATAFORSEO_PROVIDER=composio
 COMPOSIO_API_KEY=...
+```
+
+DataForSEO remains separate:
+
+```sh
 DATAFORSEO_API_KEY=...
 ```
 
-Optional production hardening:
-
-```sh
-COMPOSIO_DATAFORSEO_CONNECTED_ACCOUNT_ID=ca_...
-COMPOSIO_DATAFORSEO_TOOLKIT_VERSION=20260429_00
-```
-
-## Why This Boundary
-
-Composio's DataForSEO toolkit exposes hundreds of tools for SERP, backlinks,
-keywords, Lighthouse/on-page, business data, app/merchant data, and AI/LLM SEO.
-OpenSEO already has deterministic schemas and billing based on DataForSEO task
-cost metadata, so the safest provider switch is below the raw DataForSEO helper
-functions rather than inside product services or MCP tools.
-
 ## Verification
 
-Run focused checks after changing this integration:
+Run the normal app checks after changing connected-tools behavior:
 
 ```sh
-pnpm exec vitest run src/server/lib/dataProvider.test.ts src/server/lib/composioDataforseo.test.ts src/server/lib/dataforseoTransport.test.ts
-pnpm run types:check
+pnpm run ci:check
+pnpm run test:ci
 ```
 
-Live verification requires valid Composio and DataForSEO credentials. Use a
-zero-cost DataForSEO endpoint before running billable SEO actions:
+Use the direct DataForSEO smoke test when validating SEO credentials:
 
 ```sh
-DATAFORSEO_PROVIDER=composio pnpm run composio:dataforseo:smoke
+pnpm run dataforseo:smoke
 ```

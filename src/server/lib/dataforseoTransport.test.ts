@@ -1,47 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  envMock,
-  proxyMock,
-  getOptionalEnvValueMock,
-  getRequiredEnvValueMock,
-  fetchMock,
-} = vi.hoisted(() => {
-  const envValues: Record<string, string | undefined> = {
-    DATAFORSEO_PROVIDER: undefined as string | undefined,
-  };
-
-  return {
-    envMock: envValues,
-    proxyMock: vi.fn(),
-    getOptionalEnvValueMock: vi.fn((name: string) => {
-      const value = envValues[name];
-      return Promise.resolve(typeof value === "string" ? value : undefined);
-    }),
-    getRequiredEnvValueMock: vi.fn(),
-    fetchMock: vi.fn<typeof fetch>(),
-  };
-});
-
-vi.mock("@/server/lib/composioDataforseo", () => ({
-  proxyDataforseoRequestWithComposio: proxyMock,
+const { getRequiredEnvValueMock, fetchMock } = vi.hoisted(() => ({
+  getRequiredEnvValueMock: vi.fn(),
+  fetchMock: vi.fn<typeof fetch>(),
 }));
 
 vi.mock("@/server/lib/runtime-env", () => ({
-  getOptionalEnvValue: getOptionalEnvValueMock,
   getRequiredEnvValue: getRequiredEnvValueMock,
 }));
 
 describe("requestDataforseo", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    envMock.DATAFORSEO_PROVIDER = undefined;
     getRequiredEnvValueMock.mockResolvedValue("encoded-login-password");
     fetchMock.mockResolvedValue(Response.json({ status_code: 20000 }));
     vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("uses direct DataForSEO by default", async () => {
+  it("uses direct DataForSEO with the configured API key", async () => {
     const { requestDataforseo } =
       await import("@/server/lib/dataforseoTransport");
 
@@ -59,26 +35,22 @@ describe("requestDataforseo", () => {
       Authorization: "Basic encoded-login-password",
       "Content-Type": "application/json",
     });
-    expect(proxyMock).not.toHaveBeenCalled();
   });
 
-  it("uses Composio when DATAFORSEO_PROVIDER is composio", async () => {
-    envMock.DATAFORSEO_PROVIDER = "composio";
-    proxyMock.mockResolvedValue({ status_code: 20000 });
+  it("serializes POST bodies and preserves the abort signal", async () => {
+    const abortController = new AbortController();
     const { requestDataforseo } =
       await import("@/server/lib/dataforseoTransport");
 
-    const response = await requestDataforseo({
-      path: "/v3/appendix/user_data",
-      method: "GET",
+    await requestDataforseo({
+      path: "/v3/dataforseo_labs/google/keyword_overview/live",
+      method: "POST",
+      body: [{ keyword: "seo" }],
+      signal: abortController.signal,
     });
 
-    expect(await response.json()).toEqual({ status_code: 20000 });
-    expect(proxyMock).toHaveBeenCalledWith({
-      path: "/v3/appendix/user_data",
-      method: "GET",
-      body: undefined,
-    });
-    expect(fetchMock).not.toHaveBeenCalled();
+    const fetchCall = fetchMock.mock.calls[0];
+    expect(fetchCall?.[1]?.body).toBe(JSON.stringify([{ keyword: "seo" }]));
+    expect(fetchCall?.[1]?.signal).toBe(abortController.signal);
   });
 });
