@@ -61,6 +61,9 @@
       "DATAFORSEO_API_KEY": {
         "description": "Base64-encoded `login:password` for DataForSEO API access."
       },
+      "COMPOSIO_API_KEY": {
+        "description": "Composio project API key used for connected external tools in the Tools and Settings surfaces."
+      },
       "HOSTED_ALLOWED_EMAILS": {
         "description": "Comma-separated hosted auth signup/sign-in allowlist. This deployment is restricted to `jeremy@ignitabull.com`."
       },
@@ -71,6 +74,7 @@
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^0.4.0",
+    "@composio/core": "^0.10.0",
     "@every-app/sdk": "^0.1.14",
     "@modelcontextprotocol/sdk": "1.29.0",
     "@tanstack/query-core": "^5.90.9",

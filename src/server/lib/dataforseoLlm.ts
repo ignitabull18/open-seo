@@ -13,8 +13,8 @@ import {
 } from "@/server/lib/dataforseoLlmSchemas";
 import type { DataforseoApiResponse } from "@/server/lib/dataforseoCost";
 import { createDataforseoAccessClassifier } from "@/server/lib/dataforseoAccessClassification";
+import { postDataforseoJson } from "@/server/lib/dataforseoTransport";
 import { AppError } from "@/server/lib/errors";
-import { getRequiredEnvValue } from "@/server/lib/runtime-env";
 
 /**
  * Raw HTTP wrappers for DataForSEO AI Optimization endpoints.
@@ -24,7 +24,6 @@ import { getRequiredEnvValue } from "@/server/lib/runtime-env";
  * alongside parsed data so the calling client can meter usage with Autumn.
  */
 
-const API_BASE = "https://api.dataforseo.com";
 const MAX_DATAFORSEO_ERROR_PAYLOAD_LENGTH = 1600;
 
 // ChatGPT mention/response data is only available for US/en per DataForSEO docs.
@@ -38,17 +37,7 @@ export type LlmPlatform = "chat_gpt" | "google";
 // ---------------------------------------------------------------------------
 
 async function postLlm(path: string, payload: unknown): Promise<unknown> {
-  const apiKey = await getRequiredEnvValue("DATAFORSEO_API_KEY");
-  const response = await fetch(`${API_BASE}${path}`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const rawText = await response.text();
+  const { response, rawText } = await postDataforseoJson(path, payload);
 
   if (!response.ok) {
     throw (

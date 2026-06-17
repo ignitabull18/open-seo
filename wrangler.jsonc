@@ -49,6 +49,13 @@
       "id": "62deebe3a0d54b16ae659feb51869933",
     },
   ],
+  "secrets_store_secrets": [
+    {
+      "binding": "COMPOSIO_API_KEY",
+      "store_id": "d1ed492edf914ba3ae7a85b47bb82f9d",
+      "secret_name": "COMPOSIO_API_KEY",
+    },
+  ],
   "d1_databases": [
     {
       "binding": "DB",

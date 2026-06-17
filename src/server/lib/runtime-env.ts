@@ -11,11 +11,23 @@ async function getEnvValue(name: string): Promise<string | undefined> {
 
   const workersEnv = await getWorkersEnv();
   const workerValue = workersEnv?.[name];
-  return typeof workerValue === "string" ? workerValue : undefined;
+  if (typeof workerValue === "string") {
+    return workerValue;
+  }
+  if (isSecretsStoreSecret(workerValue)) {
+    return workerValue.get();
+  }
+  return undefined;
+}
+
+export async function getOptionalEnvValue(
+  name: string,
+): Promise<string | undefined> {
+  return getEnvValue(name);
 }
 
 export async function getRequiredEnvValue(name: string): Promise<string> {
-  const value = await getEnvValue(name);
+  const value = await getOptionalEnvValue(name);
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
@@ -44,4 +56,10 @@ async function loadWorkersEnv(): Promise<Record<string, unknown> | null> {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+function isSecretsStoreSecret(
+  value: unknown,
+): value is { get: () => Promise<string> } {
+  return isRecord(value) && typeof value.get === "function";
 }
