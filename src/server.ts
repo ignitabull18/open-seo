@@ -15,6 +15,7 @@ import { requestWithPublicOrigin } from "@/server/mcp/public-origin";
 import { MCP_ROUTE } from "@/server/mcp/context";
 import { handleSelfHostedOpenSeoMcpRequest } from "@/server/mcp/transport";
 import { computeNextCheckAt } from "@/shared/rank-tracking";
+import { getSelfHostedAuthConfigMessage } from "@/lib/self-host-auth-config";
 
 const appFetch = createStartHandler(defaultStreamHandler);
 const handleAppFetch = (request: Request): Response | Promise<Response> =>
@@ -28,6 +29,15 @@ function fetch(
 ): Response | Promise<Response> {
   const authMode = getAuthMode(env.AUTH_MODE);
   const publicRequest = requestWithPublicOrigin(request);
+
+  const selfHostedAuthConfigMessage = getSelfHostedAuthConfigMessage(env);
+
+  if (selfHostedAuthConfigMessage) {
+    return new Response(selfHostedAuthConfigMessage, {
+      status: 500,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
+  }
 
   if (isHostedAuthMode(authMode)) {
     return openSeoOAuthProvider.fetch(

@@ -67,6 +67,12 @@ const transportOptionsSchema = z.object({
         props: z.record(z.string(), z.unknown()),
       })
       .optional(),
+    corsOptions: z
+      .object({
+        headers: z.string().optional(),
+        exposeHeaders: z.string().optional(),
+      })
+      .optional(),
   }),
 });
 
@@ -158,6 +164,23 @@ describe("handleSelfHostedOpenSeoMcpRequest", () => {
       subject: "cloudflare-user",
       baseUrl: "https://open-seo.test",
     });
+  });
+
+  it("allows the Cloudflare Access assertion header on self-hosted MCP CORS", async () => {
+    const { handleSelfHostedOpenSeoMcpRequest } =
+      await import("@/server/mcp/transport");
+
+    const response = await handleSelfHostedOpenSeoMcpRequest(
+      createMcpRequest(),
+      "cloudflare_access",
+      {},
+      ctx,
+    );
+    const body = transportOptionsSchema.parse(await response.json());
+
+    expect(body.options.corsOptions?.headers).toContain(
+      "cf-access-jwt-assertion",
+    );
   });
 
   it("lets the MCP transport handle OPTIONS without auth context", async () => {

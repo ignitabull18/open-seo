@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { getSelfHostedAuthConfigMessage } from "@/lib/self-host-auth-config";
 import { AppError } from "@/server/lib/errors";
 import { resolveDelegatedContext } from "./delegated";
 import type { EnsuredUserContext } from "./types";
@@ -46,6 +47,12 @@ function getValidatedTeamDomain(teamDomain: string) {
 export async function resolveCloudflareAccessContext(
   headers: Headers,
 ): Promise<EnsuredUserContext> {
+  const configMessage = getSelfHostedAuthConfigMessage(env);
+
+  if (configMessage) {
+    throw new AppError("AUTH_CONFIG_MISSING", configMessage);
+  }
+
   const teamDomain = env.TEAM_DOMAIN
     ? getValidatedTeamDomain(env.TEAM_DOMAIN)
     : null;
